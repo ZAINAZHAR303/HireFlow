@@ -38,3 +38,56 @@ export function saveToken(token) { if (typeof window !== 'undefined') localStora
 export function getToken() { if (typeof window === 'undefined') return null; return localStorage.getItem('hf_token'); }
 export function saveUser(user) { if (typeof window !== 'undefined') localStorage.setItem('hf_user', JSON.stringify(user)); }
 export function getUser() { if (typeof window === 'undefined') return null; try { return JSON.parse(localStorage.getItem('hf_user')); } catch(e){return null;} }
+
+// Application tracking
+export async function trackApplication(token, payload) {
+  const res = await fetch(`${API_BASE}/applications/track-application`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify(payload)
+  });
+  return res.json();
+}
+
+export async function getApplications(token) {
+  const res = await fetch(`${API_BASE}/applications/applications`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return res.json();
+}
+
+export async function getApplication(token, id) {
+  const res = await fetch(`${API_BASE}/applications/applications/${id}`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return res.json();
+}
+
+// Interview preparation
+export async function generateInterviewPrep(token, payload) {
+  const res = await fetch(`${API_BASE}/interview-prep/generate-interview-prep`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify(payload)
+  });
+  return res.json();
+}
+
+// Cover letter
+export async function generateCoverLetter(token, payload) {
+  const res = await fetch(`${API_BASE}/interview-prep/generate-cover-letter`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify(payload)
+  });
+  return res.json();
+}

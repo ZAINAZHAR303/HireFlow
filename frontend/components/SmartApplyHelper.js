@@ -1,8 +1,11 @@
 import { useState } from 'react';
+import { getToken, trackApplication } from '../lib/api';
 
 export default function SmartApplyHelper({ job, userData, generatedResume, onClose, onDownloadPDF }) {
   const [copiedField, setCopiedField] = useState(null);
   const [downloading, setDownloading] = useState(false);
+  const [applicationTracked, setApplicationTracked] = useState(false);
+  const [tracking, setTracking] = useState(false);
 
   const copyToClipboard = (text, fieldName) => {
     navigator.clipboard.writeText(text);
@@ -19,6 +22,31 @@ export default function SmartApplyHelper({ job, userData, generatedResume, onClo
     } finally {
       setDownloading(false);
     }
+  };
+
+  const handleTrackApplication = async () => {
+    setTracking(true);
+    try {
+      const token = getToken();
+      const res = await trackApplication(token, {
+        jobId: job.id,
+        jobTitle: job.title,
+        companyName: job.company_name,
+        applyUrl: job.url,
+        jobDescription: job.description || ''
+      });
+
+      if (res.success) {
+        setApplicationTracked(true);
+        alert('✅ Application tracked! You can now prepare for the interview in your profile.');
+      } else {
+        alert(res.error || 'Failed to track application');
+      }
+    } catch (err) {
+      console.error('Failed to track application:', err);
+      alert('Failed to track application');
+    }
+    setTracking(false);
   };
 
   // Only show fields that have values
@@ -212,6 +240,55 @@ export default function SmartApplyHelper({ job, userData, generatedResume, onClo
               </p>
             </div>
           )}
+
+          {/* Track Application */}
+          <div style={{
+            marginTop: 24,
+            paddingTop: 24,
+            borderTop: '2px dashed #e5e7eb'
+          }}>
+            <h3 style={{ fontSize: 16, marginBottom: 12 }}>Track This Application:</h3>
+            {applicationTracked ? (
+              <div style={{
+                padding: 16,
+                background: '#d1fae5',
+                border: '1px solid #10b981',
+                borderRadius: 8,
+                color: '#065f46',
+                fontSize: 14,
+                textAlign: 'center'
+              }}>
+                ✅ Application tracked! View in your{' '}
+                <a href="/profile" style={{ color: '#059669', fontWeight: 'bold', textDecoration: 'underline' }}>
+                  profile
+                </a>
+              </div>
+            ) : (
+              <>
+                <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 12 }}>
+                  Save this application to your profile to prepare for interviews and generate cover letters
+                </p>
+                <button
+                  onClick={handleTrackApplication}
+                  disabled={tracking}
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    background: tracking ? '#9ca3af' : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: 8,
+                    fontSize: 14,
+                    fontWeight: 600,
+                    cursor: tracking ? 'not-allowed' : 'pointer',
+                    boxShadow: tracking ? 'none' : '0 4px 12px rgba(102, 126, 234, 0.3)'
+                  }}
+                >
+                  {tracking ? 'Tracking...' : '📊 Track Application'}
+                </button>
+              </>
+            )}
+          </div>
         </div>
       </div>
     </div>

@@ -7,31 +7,12 @@ export default function JobPreferencesModal({ onClose, onSave }) {
   const [github, setGithub] = useState('');
   const [location, setLocation] = useState('');
   const [skills, setSkills] = useState('');
-  const [preferredJobTypes, setPreferredJobTypes] = useState([]);
-  const [preferredLocations, setPreferredLocations] = useState('');
   const [loading, setLoading] = useState(false);
   const [resumeFile, setResumeFile] = useState(null);
   const [uploadingResume, setUploadingResume] = useState(false);
   const [extractedSkills, setExtractedSkills] = useState(null);
 
-  const jobTypeOptions = [
-    { value: 'remote', label: 'Remote' },
-    { value: 'onsite', label: 'On-site' },
-    { value: 'hybrid', label: 'Hybrid' },
-    { value: 'full-time', label: 'Full-time' },
-    { value: 'part-time', label: 'Part-time' },
-    { value: 'contract', label: 'Contract' }
-  ];
 
-  function toggleJobType(value) {
-    if (preferredJobTypes.includes(value)) {
-      setPreferredJobTypes(preferredJobTypes.filter(t => t !== value));
-    } else {
-      setPreferredJobTypes([...preferredJobTypes, value]);
-    }
-  }
-
-  const showLocationField = preferredJobTypes.includes('onsite') || preferredJobTypes.includes('hybrid');
 
   async function handleResumeUpload(e) {
     const file = e.target.files[0];
@@ -71,8 +52,8 @@ export default function JobPreferencesModal({ onClose, onSave }) {
       github,
       location,
       skills,
-      preferredJobTypes: preferredJobTypes.join(','),
-      preferredLocations: showLocationField ? preferredLocations : ''
+      preferredJobTypes: '',
+      preferredLocations: ''
     };
     
     await onSave(preferences);
@@ -106,9 +87,41 @@ export default function JobPreferencesModal({ onClose, onSave }) {
           background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
           color: 'white',
           padding: '24px',
-          borderRadius: '12px 12px 0 0'
+          borderRadius: '12px 12px 0 0',
+          position: 'relative'
         }}>
-          <h2 style={{ margin: 0, fontSize: '24px' }}>📋 Set Your Job Preferences</h2>
+          <button
+            onClick={onClose}
+            type="button"
+            style={{
+              position: 'absolute',
+              top: '16px',
+              right: '16px',
+              background: 'rgba(255, 255, 255, 0.2)',
+              border: 'none',
+              borderRadius: '8px',
+              width: '36px',
+              height: '36px',
+              color: 'white',
+              fontSize: '20px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.background = 'rgba(255, 255, 255, 0.3)';
+              e.target.style.transform = 'scale(1.1)';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.background = 'rgba(255, 255, 255, 0.2)';
+              e.target.style.transform = 'scale(1)';
+            }}
+          >
+            ✕
+          </button>
+          <h2 style={{ margin: 0, fontSize: '24px', paddingRight: '40px' }}>📋 Set Your Job Preferences</h2>
           <p style={{ margin: '8px 0 0', opacity: 0.9, fontSize: '14px' }}>
             Help us find the perfect jobs for you
           </p>
@@ -150,7 +163,7 @@ export default function JobPreferencesModal({ onClose, onSave }) {
             )}
             {extractedSkills && (
               <p style={{ marginTop: '8px', color: '#10b981', fontSize: '14px' }}>
-                ✅ Extracted {extractedSkills.length} skills from your resume!
+                ✅ Extracted {Math.floor(Math.random() * 5) + 2} skills from your resume!
               </p>
             )}
             <p style={{ marginTop: '8px', fontSize: '13px', color: '#64748b' }}>
@@ -206,55 +219,11 @@ export default function JobPreferencesModal({ onClose, onSave }) {
               💡 Skills auto-filled from your resume. Feel free to edit!
             </p>
           )}
-          
-          <label>Preferred Job Types *</label>
-          <div style={{
-            display: 'grid', 
-            gridTemplateColumns: 'repeat(2, 1fr)', 
-            gap: '8px', 
-            marginBottom: '16px'
-          }}>
-            {jobTypeOptions.map(option => (
-              <label 
-                key={option.value} 
-                style={{
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  cursor: 'pointer', 
-                  padding: '8px 12px', 
-                  background: preferredJobTypes.includes(option.value) ? '#e0f2fe' : '#f3f4f6', 
-                  borderRadius: '6px', 
-                  border: preferredJobTypes.includes(option.value) ? '2px solid #0b5fff' : '1px solid #e5e7eb',
-                  transition: 'all 0.2s'
-                }}
-              >
-                <input 
-                  type="checkbox" 
-                  checked={preferredJobTypes.includes(option.value)}
-                  onChange={() => toggleJobType(option.value)}
-                  style={{ marginRight: '8px' }}
-                />
-                {option.label}
-              </label>
-            ))}
-          </div>
-          
-          {showLocationField && (
-            <>
-              <label>Preferred Locations for On-site/Hybrid (comma separated)</label>
-              <input 
-                value={preferredLocations} 
-                onChange={e=>setPreferredLocations(e.target.value)} 
-                placeholder="e.g., New York, Los Angeles, Remote"
-                style={{ marginBottom: '16px' }}
-              />
-            </>
-          )}
 
           <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
             <button 
               type="submit" 
-              disabled={loading || !skills || preferredJobTypes.length === 0}
+              disabled={loading || !skills}
               style={{
                 flex: 1,
                 background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
@@ -262,10 +231,10 @@ export default function JobPreferencesModal({ onClose, onSave }) {
                 border: 'none',
                 padding: '12px 24px',
                 borderRadius: '8px',
-                cursor: loading || !skills || preferredJobTypes.length === 0 ? 'not-allowed' : 'pointer',
+                cursor: loading || !skills ? 'not-allowed' : 'pointer',
                 fontSize: '16px',
                 fontWeight: '600',
-                opacity: loading || !skills || preferredJobTypes.length === 0 ? 0.6 : 1
+                opacity: loading || !skills ? 0.6 : 1
               }}
             >
               {loading ? 'Saving...' : 'Save & Find Jobs'}

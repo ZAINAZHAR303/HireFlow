@@ -33,11 +33,29 @@ const applicationSchema = new mongoose.Schema({
   coverLetterPath: {
     type: String
   },
+  coverLetter: {
+    type: String
+  },
   screenshotPath: {
     type: String
   },
   errorMessage: {
     type: String
+  },
+  // Interview Preparation
+  interviewPrep: {
+    questions: [{
+      question: String,
+      answer: String,
+      category: String // behavioral, technical, company-specific
+    }],
+    companyResearch: {
+      summary: String,
+      keyFacts: [String],
+      culture: String,
+      recentNews: String
+    },
+    preparedAt: Date
   },
   automationSteps: [{
     step: String,

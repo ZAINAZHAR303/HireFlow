@@ -130,6 +130,46 @@ router.post('/apply', authMiddleware, async (req, res) => {
   }
 });
 
+// POST /track-application - Manually track a job application
+router.post('/track-application', authMiddleware, async (req, res) => {
+  try {
+    const { jobId, jobTitle, companyName, applyUrl, jobDescription } = req.body;
+
+    if (!jobTitle || !companyName) {
+      return res.status(400).json({ error: 'Job title and company name are required' });
+    }
+
+    console.log(`📊 Tracking application: ${jobTitle} at ${companyName}`);
+    console.log(`📋 Job description length: ${jobDescription?.length || 0} characters`);
+
+    // Create application record
+    const application = new Application({
+      userId: req.user._id,
+      jobId: jobId || `manual_${Date.now()}`,
+      jobTitle,
+      companyName,
+      applyUrl: applyUrl || '',
+      status: 'pending',
+      appliedAt: new Date(),
+      metadata: {
+        jobDescription: jobDescription || '',
+        trackedManually: true
+      }
+    });
+
+    await application.save();
+
+    res.json({
+      success: true,
+      application
+    });
+
+  } catch (err) {
+    console.error('Error tracking application:', err);
+    res.status(500).json({ error: 'Failed to track application' });
+  }
+});
+
 // GET /applications - Get user's application history
 router.get('/applications', authMiddleware, async (req, res) => {
   try {
