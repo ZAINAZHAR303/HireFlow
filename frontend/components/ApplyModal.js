@@ -16,7 +16,7 @@ export default function ApplyModal({ job, onClose }) {
 
       const token = localStorage.getItem('token');
       const response = await axios.post(
-        'http://localhost:4001/applications/apply',
+        `${process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:4001'}/applications/apply`,
         {
           jobId: job.id,
           jobTitle: job.title,
