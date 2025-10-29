@@ -10,7 +10,15 @@ const applicationsRoutes = require('./routes/applications');
 const interviewPrepRoutes = require('./routes/interviewPrep');
 
 const app = express();
-app.use(cors());
+
+// CORS configuration - Allow requests from frontend
+app.use(cors({
+  origin: '*', // Allow all origins for now (will update with specific Vercel URL after deployment)
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 app.use(express.json());
 
 const PORT = process.env.PORT || 4001;
