@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Demo Job Application Form - TechCorp</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 700px;
+      width: 100%;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      overflow: hidden;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 40px 30px;
+      text-align: center;
+    }
+
+    .header h1 {
+      font-size: 28px;
+      margin-bottom: 8px;
+    }
+
+    .header p {
+      opacity: 0.9;
+      font-size: 16px;
+    }
+
+    .form-container {
+      padding: 40px 30px;
+    }
+
+    .form-group {
+      margin-bottom: 24px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      color: #333;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    input[type="url"],
+    textarea {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 15px;
+      transition: border-color 0.3s;
+      font-family: inherit;
+    }
+
+    input:focus,
+    textarea:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    .file-input-wrapper {
+      position: relative;
+      overflow: hidden;
+      display: inline-block;
+      width: 100%;
+    }
+
+    .file-input-wrapper input[type="file"] {
+      position: absolute;
+      left: -9999px;
+    }
+
+    .file-input-label {
+      display: block;
+      padding: 12px 16px;
+      background: #f5f5f5;
+      border: 2px dashed #d0d0d0;
+      border-radius: 8px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .file-input-label:hover {
+      background: #ebebeb;
+      border-color: #667eea;
+    }
+
+    .file-name {
+      margin-top: 8px;
+      font-size: 13px;
+      color: #666;
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      margin-top: 12px;
+    }
+
+    .submit-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .submit-btn:active {
+      transform: translateY(0);
+    }
+
+    .success-message {
+      display: none;
+      background: #4caf50;
+      color: white;
+      padding: 20px;
+      text-align: center;
+      border-radius: 8px;
+      margin-top: 20px;
+    }
+
+    .required {
+      color: #e74c3c;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🚀 Join TechCorp</h1>
+      <p>Senior Full Stack Developer Position</p>
+    </div>
+
+    <div class="form-container">
+      <form id="applicationForm">
+        <div class="form-group">
+          <label for="fullName">Full Name <span class="required">*</span></label>
+          <input type="text" id="fullName" name="fullName" placeholder="John Doe" required>
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email Address <span class="required">*</span></label>
+          <input type="email" id="email" name="email" placeholder="john@example.com" required>
+        </div>
+
+        <div class="form-group">
+          <label for="phone">Phone Number <span class="required">*</span></label>
+          <input type="tel" id="phone" name="phone" placeholder="+1 (555) 123-4567" required>
+        </div>
+
+        <div class="form-group">
+          <label for="linkedin">LinkedIn Profile</label>
+          <input type="url" id="linkedin" name="linkedin" placeholder="https://linkedin.com/in/johndoe">
+        </div>
+
+        <div class="form-group">
+          <label for="portfolio">Portfolio / GitHub</label>
+          <input type="url" id="portfolio" name="portfolio" placeholder="https://github.com/johndoe">
+        </div>
+
+        <div class="form-group">
+          <label for="resume">Upload Resume (PDF) <span class="required">*</span></label>
+          <div class="file-input-wrapper">
+            <label for="resume" class="file-input-label">
+              📄 Click to upload resume
+            </label>
+            <input type="file" id="resume" name="resume" accept=".pdf" required>
+          </div>
+          <div class="file-name" id="resumeFileName"></div>
+        </div>
+
+        <div class="form-group">
+          <label for="coverLetter">Cover Letter (Optional)</label>
+          <textarea id="coverLetter" name="coverLetter" placeholder="Tell us why you're excited about this role..."></textarea>
+        </div>
+
+        <button type="submit" class="submit-btn">Submit Application</button>
+
+        <div class="success-message" id="successMessage">
+          ✅ Application submitted successfully! We'll get back to you soon.
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // File input display
+    document.getElementById('resume').addEventListener('change', function(e) {
+      const fileName = e.target.files[0]?.name || '';
+      document.getElementById('resumeFileName').textContent = fileName ? `Selected: ${fileName}` : '';
+    });
+
+    // Form submission
+    document.getElementById('applicationForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const formData = new FormData(e.target);
+      const data = Object.fromEntries(formData.entries());
+      
+      console.log('Form submitted:', data);
+      
+      // Show success message
+      document.getElementById('successMessage').style.display = 'block';
+      
+      // Hide form
+      e.target.style.display = 'none';
+      
+      // Store submission
+      localStorage.setItem('lastApplication', JSON.stringify({
+        ...data,
+        timestamp: new Date().toISOString()
+      }));
+    });
+  </script>
+</body>
+</html>

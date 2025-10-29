@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HireFlow - Smart Apply Bookmarklet Setup</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    
+    .container {
+      max-width: 800px;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      overflow: hidden;
+    }
+    
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 40px;
+      text-align: center;
+    }
+    
+    .header h1 {
+      font-size: 32px;
+      margin-bottom: 8px;
+    }
+    
+    .header p {
+      font-size: 16px;
+      opacity: 0.9;
+    }
+    
+    .content {
+      padding: 40px;
+    }
+    
+    .step {
+      margin-bottom: 32px;
+      padding-bottom: 32px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    
+    .step:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+    }
+    
+    .step-number {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border-radius: 50%;
+      font-weight: 600;
+      margin-right: 12px;
+    }
+    
+    .step h2 {
+      display: flex;
+      align-items: center;
+      font-size: 20px;
+      margin-bottom: 12px;
+      color: #111827;
+    }
+    
+    .step p {
+      margin-left: 44px;
+      color: #6b7280;
+      line-height: 1.6;
+      margin-bottom: 12px;
+    }
+    
+    .bookmarklet-button {
+      display: inline-block;
+      padding: 16px 32px;
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 16px;
+      margin-left: 44px;
+      cursor: move;
+      transition: transform 0.2s;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+    
+    .bookmarklet-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+    }
+    
+    .note {
+      margin-left: 44px;
+      background: #fef3c7;
+      border: 1px solid #fbbf24;
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 14px;
+      color: #78350f;
+      margin-top: 12px;
+    }
+    
+    .demo {
+      margin-left: 44px;
+      margin-top: 12px;
+    }
+    
+    .demo img {
+      max-width: 100%;
+      border-radius: 8px;
+      border: 1px solid #e5e7eb;
+    }
+    
+    .features {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      margin-top: 32px;
+      padding: 24px;
+      background: #f9fafb;
+      border-radius: 12px;
+    }
+    
+    .feature {
+      display: flex;
+      align-items: start;
+      gap: 12px;
+    }
+    
+    .feature-icon {
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+    
+    .feature-text {
+      flex: 1;
+    }
+    
+    .feature-text strong {
+      display: block;
+      color: #111827;
+      margin-bottom: 4px;
+    }
+    
+    .feature-text span {
+      color: #6b7280;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>📋 HireFlow Smart Apply</h1>
+      <p>One-click copy-paste helper for job applications</p>
+    </div>
+    
+    <div class="content">
+      <div class="step">
+        <h2><span class="step-number">1</span> Drag This Button to Your Bookmarks Bar</h2>
+        <p>Click and drag the green button below to your browser's bookmarks bar (Ctrl+Shift+B to show it)</p>
+        <a href="javascript:(function(){const d=JSON.parse(localStorage.getItem('hireflow_autofill_data')||'{}');if(!d.name){alert('⚠️ Please generate a resume in HireFlow first!');return}const p=document.createElement('div');p.innerHTML=`<div style='position:fixed;top:20px;right:20px;z-index:999999;background:linear-gradient(135deg,rgb(102,126,234) 0%,rgb(118,75,162) 100%);color:white;padding:20px;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,0.3);max-width:400px;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif'><div style='display:flex;justify-content:space-between;align-items:center;margin-bottom:16px'><strong style='font-size:16px'>📋 HireFlow Smart Apply</strong><button onclick='this.closest(&quot;div&quot;).remove()' style='background:rgba(255,255,255,0.2);border:none;color:white;width:24px;height:24px;border-radius:4px;cursor:pointer;font-size:16px'>×</button></div><div style='background:rgba(255,255,255,0.95);border-radius:8px;padding:16px;color:#111827'><div style='margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid #e5e7eb'><div style='font-size:12px;color:#6b7280;margin-bottom:4px'>Name</div><div style='font-size:14px;font-weight:500'>${d.name||'Not set'}</div></div><div style='margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid #e5e7eb'><div style='font-size:12px;color:#6b7280;margin-bottom:4px'>Email</div><div style='font-size:14px;font-weight:500'>${d.email||'Not set'}</div></div><div style='margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid #e5e7eb'><div style='font-size:12px;color:#6b7280;margin-bottom:4px'>Phone</div><div style='font-size:14px;font-weight:500'>${d.phone||'Not set'}</div></div><div style='margin-bottom:12px'><div style='font-size:12px;color:#6b7280;margin-bottom:4px'>LinkedIn</div><div style='font-size:14px;font-weight:500'>${d.linkedin||'Not set'}</div></div><button onclick='navigator.clipboard.writeText(\`${d.resume||''}\`);this.textContent=&quot;✓ Resume Copied!&quot;;setTimeout(()=>this.textContent=&quot;📄 Copy Resume Text&quot;,2000)' style='width:100%;padding:10px;background:linear-gradient(135deg,rgb(102,126,234) 0%,rgb(118,75,162) 100%);color:white;border:none;border-radius:6px;font-weight:600;cursor:pointer;margin-top:12px'>📄 Copy Resume Text</button></div><div style='margin-top:16px;padding:12px;background:rgba(255,255,255,0.2);border-radius:8px;font-size:13px;line-height:1.6'>💡 <strong>Tip:</strong> Click any field above to copy it, then paste into the application form.</div></div>`;document.body.appendChild(p);})();" class="bookmarklet-button">
+          📋 HireFlow Smart Apply
+        </a>
+        <div class="note">
+          <strong>💡 Tip:</strong> If you can't see your bookmarks bar, press <strong>Ctrl+Shift+B</strong> (Windows/Linux) or <strong>Cmd+Shift+B</strong> (Mac)
+        </div>
+      </div>
+      
+      <div class="step">
+        <h2><span class="step-number">2</span> Generate a Resume in HireFlow</h2>
+        <p>Use the HireFlow app to tailor your resume to any job posting. This will automatically save your information.</p>
+      </div>
+      
+      <div class="step">
+        <h2><span class="step-number">3</span> Open Any Job Application Page</h2>
+        <p>Navigate to any job application form on any website (LinkedIn, Indeed, company career pages, etc.)</p>
+      </div>
+      
+      <div class="step">
+        <h2><span class="step-number">4</span> Click the Bookmarklet</h2>
+        <p>Click the "HireFlow Smart Apply" bookmark you just created. A purple panel will appear with all your information ready to copy!</p>
+      </div>
+      
+      <div class="features">
+        <div class="feature">
+          <div class="feature-icon">✅</div>
+          <div class="feature-text">
+            <strong>Works Everywhere</strong>
+            <span>Any website, any form - no restrictions</span>
+          </div>
+        </div>
+        
+        <div class="feature">
+          <div class="feature-icon">🚀</div>
+          <div class="feature-text">
+            <strong>Instant Access</strong>
+            <span>One click to see all your info</span>
+          </div>
+        </div>
+        
+        <div class="feature">
+          <div class="feature-icon">🔒</div>
+          <div class="feature-text">
+            <strong>Privacy First</strong>
+            <span>All data stored locally in your browser</span>
+          </div>
+        </div>
+        
+        <div class="feature">
+          <div class="feature-icon">📋</div>
+          <div class="feature-text">
+            <strong>Easy Copy-Paste</strong>
+            <span>Click to copy any field to clipboard</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
