@@ -76,7 +76,7 @@ Example for a Software Engineer role:
 ]`;
 
     const questionsResponse = await fetch(
-      `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash-lite:generateContent?key=${GEMINI_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -131,7 +131,7 @@ Example:
 {"summary":"A technology company focused on innovation.","keyFacts":["Fast-paced environment","Collaborative teams","Growth opportunities","Modern tech stack","Remote-friendly"],"culture":"Emphasis on innovation and teamwork with flexible work arrangements.","recentNews":"The tech industry is seeing increased demand for cloud and AI skills."}`;
 
     const researchResponse = await fetch(
-      `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash-lite:generateContent?key=${GEMINI_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -350,7 +350,7 @@ Write a professional cover letter that:
 Format: Plain text, ready to copy-paste. Do not include placeholders like [Your Name] - use the actual name provided.`;
 
     const coverLetterResponse = await fetch(
-      `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash-lite:generateContent?key=${GEMINI_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
