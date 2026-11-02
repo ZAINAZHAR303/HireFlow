@@ -8,7 +8,7 @@ async function authMiddleware(req, res, next) {
   if (parts.length !== 2) return res.status(401).json({ error: 'Invalid auth format' });
   const token = parts[1];
   try {
-    const payload = jwt.verify(token, process.env.JWT_SECRET || 'changeme');
+    const payload = jwt.verify(token, process.env.JWT_SECRET);
     const user = await User.findById(payload.id);
     if (!user) return res.status(401).json({ error: 'User not found' });
     req.user = user;
