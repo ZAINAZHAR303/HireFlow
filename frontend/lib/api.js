@@ -47,6 +47,19 @@ export async function getAtsScore(token, payload) {
   return res.json();
 }
 
+// Recruiter outreach drafting (email + LinkedIn)
+export async function generateOutreach(token, payload) {
+  const res = await fetch(`${API_BASE}/outreach/generate`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify(payload)
+  });
+  return res.json();
+}
+
 export function saveToken(token) { if (typeof window !== 'undefined') localStorage.setItem('hf_token', token); }
 export function getToken() { if (typeof window === 'undefined') return null; return localStorage.getItem('hf_token'); }
 export function saveUser(user) { if (typeof window !== 'undefined') localStorage.setItem('hf_user', JSON.stringify(user)); }

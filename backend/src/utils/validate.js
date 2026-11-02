@@ -89,12 +89,20 @@ const atsScoreSchema = z.object({
   resumeText: z.string().trim().optional(),
 });
 
+const outreachSchema = z.object({
+  jobTitle: z.string({ required_error: 'jobTitle is required' }).trim().min(1).max(200),
+  companyName: z.string({ required_error: 'companyName is required' }).trim().min(1).max(200),
+  jobDescription: z.string().trim().max(20000).optional(),
+  tone: z.enum(['professional', 'warm', 'confident', 'concise']).optional(),
+});
+
 module.exports = {
   validateBody,
   signupSchema,
   loginSchema,
   updateProfileSchema,
   atsScoreSchema,
+  outreachSchema,
   updateApplicationSchema,
   PIPELINE_STAGES,
 };

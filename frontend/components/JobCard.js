@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import ResumeGeneratorModal from './ResumeGeneratorModal';
 import AtsScoreModal from './AtsScoreModal';
+import OutreachModal from './OutreachModal';
 import { trackApplication, getToken } from '../lib/api';
 
 export default function JobCard({ job }){
   const [showResumeGenerator, setShowResumeGenerator] = useState(false);
   const [showAtsScore, setShowAtsScore] = useState(false);
+  const [showOutreach, setShowOutreach] = useState(false);
   const [tracked, setTracked] = useState(false);
   const [tracking, setTracking] = useState(false);
 
@@ -249,6 +251,28 @@ export default function JobCard({ job }){
               📊 ATS Check
             </button>
             <button
+              onClick={() => setShowOutreach(true)}
+              style={{
+                background: '#f0f4ff',
+                color: '#667eea',
+                border: 'none',
+                padding: '12px 20px',
+                borderRadius: '10px',
+                cursor: 'pointer',
+                fontSize: '14px',
+                fontWeight: '600',
+                transition: 'all 0.3s ease',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px'
+              }}
+              onMouseEnter={(e) => { e.target.style.background = '#e0e7ff'; }}
+              onMouseLeave={(e) => { e.target.style.background = '#f0f4ff'; }}
+            >
+              ✉️ Outreach
+            </button>
+            <button
               onClick={handleTrack}
               disabled={tracked || tracking}
               style={{
@@ -315,6 +339,13 @@ export default function JobCard({ job }){
         <AtsScoreModal
           job={job}
           onClose={() => setShowAtsScore(false)}
+        />
+      )}
+
+      {showOutreach && (
+        <OutreachModal
+          job={job}
+          onClose={() => setShowOutreach(false)}
         />
       )}
     </>

@@ -16,6 +16,7 @@ const jobsRoutes = require('./routes/jobs');
 const resumeGeneratorRoutes = require('./routes/resumeGenerator');
 const applicationsRoutes = require('./routes/applications');
 const interviewPrepRoutes = require('./routes/interviewPrep');
+const outreachRoutes = require('./routes/outreach');
 
 const app = express();
 
@@ -67,6 +68,7 @@ async function start() {
   app.use('/resume-generator', resumeGeneratorRoutes);
   app.use('/applications', applicationsRoutes);
   app.use('/interview-prep', interviewPrepRoutes);
+  app.use('/outreach', outreachRoutes);
 
   app.get('/', (req, res) => res.json({ ok: true }));
   app.get('/health', (req, res) =>
