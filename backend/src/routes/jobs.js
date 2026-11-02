@@ -1,29 +1,35 @@
 const express = require('express');
-const axios = require('axios');
 const JobCache = require('../models/jobCache');
 const authMiddleware = require('../middleware/authMiddleware');
 const { scoreJob } = require('../utils/jobScoring');
+const { fetchAllJobs } = require('../services/jobSources');
 
 const router = express.Router();
 
-const REMOTIVE_URL = 'https://remotive.com/api/remote-jobs';
-
-async function fetchRemotiveAll() {
+// Fetch (and cache) the merged, de-duplicated job list from all enabled sources.
+async function getAllJobs() {
   const key = 'all';
   const cached = await JobCache.findOne({ key });
   const TTL_MS = 1000 * 60 * 10; // 10 minutes
   if (cached && Date.now() - cached.fetchedAt.getTime() < TTL_MS) return cached.data;
-  const resp = await axios.get(REMOTIVE_URL, { timeout: 15000 });
-  const data = resp.data;
-  await JobCache.findOneAndUpdate({ key }, { data, fetchedAt: new Date() }, { upsert: true });
-  return data;
+
+  const { jobs, sources, errors } = await fetchAllJobs();
+  console.log(`📥 Fetched ${jobs.length} jobs from [${sources.join(', ')}]${errors.length ? `, ${errors.length} source(s) failed` : ''}`);
+
+  // Only refresh the cache when at least one source succeeded, so a transient
+  // outage doesn't blow away a good cached list.
+  if (jobs.length > 0) {
+    await JobCache.findOneAndUpdate({ key }, { data: { jobs }, fetchedAt: new Date() }, { upsert: true });
+    return { jobs };
+  }
+  return cached ? cached.data : { jobs: [] };
 }
 
 router.get('/', authMiddleware, async (req, res) => {
   try {
     const user = req.user;
-    const remotive = await fetchRemotiveAll();
-    let jobs = remotive.jobs || [];
+    const all = await getAllJobs();
+    let jobs = all.jobs || [];
 
     const coreSkills = user.skills || [];
 
