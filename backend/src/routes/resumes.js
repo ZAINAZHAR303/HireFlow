@@ -89,6 +89,10 @@ router.post('/upload', authMiddleware, upload.single('resume'), async (req, res)
     if (skillExpansion.job_categories?.length > 0) {
       req.user.jobCategories = skillExpansion.job_categories;
     }
+    if (skillExpansion.search_keywords?.length > 0) {
+      // Persist AI-expanded keywords so job matching can use them (previously discarded).
+      req.user.searchKeywords = skillExpansion.search_keywords;
+    }
     
     // attach to user
     req.user.resumeId = resume._id;

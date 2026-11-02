@@ -10,6 +10,7 @@ const UserSchema = new mongoose.Schema({
   location: { type: String, default: '' },
   skills: { type: [String], default: [] },
   jobCategories: { type: [String], default: [] },
+  searchKeywords: { type: [String], default: [] }, // AI-expanded terms for matching
   preferredJobTypes: { type: [String], default: [] }, // remote, onsite, hybrid, full-time, part-time, contract
   preferredLocations: { type: [String], default: [] }, // for onsite/hybrid jobs
   experienceLevel: { type: String, default: '' }, // entry, mid, senior
