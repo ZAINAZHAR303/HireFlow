@@ -8,6 +8,8 @@ const Resume = require('../models/resume');
 const User = require('../models/user');
 const authMiddleware = require('../middleware/authMiddleware');
 const axios = require('axios');
+const { computeAtsScore } = require('../utils/atsScore');
+const { validateBody, atsScoreSchema } = require('../utils/validate');
 
 const AI_BACKEND_URL = process.env.AI_BACKEND_URL || 'http://localhost:5001';
 
@@ -115,6 +117,32 @@ router.post('/upload', authMiddleware, upload.single('resume'), async (req, res)
 router.get('/me', authMiddleware, async (req, res) => {
   const resume = await Resume.findOne({ userId: req.user._id }).sort({ uploadedAt: -1 });
   res.json({ resume });
+});
+
+// POST /resumes/ats-score - Score the user's resume against a job description
+// and return matched/missing keywords + suggestions. Works without any AI key.
+router.post('/ats-score', authMiddleware, validateBody(atsScoreSchema), async (req, res) => {
+  try {
+    const { jobDescription } = req.body;
+    let resumeText = req.body.resumeText;
+
+    if (!resumeText) {
+      const resume = await Resume.findOne({ userId: req.user._id }).sort({ uploadedAt: -1 });
+      resumeText = resume?.text || '';
+    }
+
+    if (!resumeText || resumeText.trim().length < 50) {
+      return res.status(400).json({
+        error: 'No resume text available. Upload a resume first or include resumeText in the request.',
+      });
+    }
+
+    const result = computeAtsScore(resumeText, jobDescription);
+    res.json({ success: true, ...result });
+  } catch (err) {
+    console.error('ats-score error', err);
+    res.status(500).json({ error: 'Failed to compute ATS score' });
+  }
 });
 
 module.exports = router;

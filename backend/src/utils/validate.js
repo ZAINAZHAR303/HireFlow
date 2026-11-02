@@ -72,9 +72,16 @@ const updateProfileSchema = z.object({
   experienceLevel: z.string().trim().max(40).optional(),
 });
 
+const atsScoreSchema = z.object({
+  jobDescription: z.string({ required_error: 'jobDescription is required' }).trim().min(30, 'jobDescription is too short'),
+  jobTitle: z.string().trim().max(200).optional(),
+  resumeText: z.string().trim().optional(),
+});
+
 module.exports = {
   validateBody,
   signupSchema,
   loginSchema,
   updateProfileSchema,
+  atsScoreSchema,
 };

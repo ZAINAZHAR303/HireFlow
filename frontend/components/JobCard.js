@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import ResumeGeneratorModal from './ResumeGeneratorModal';
+import AtsScoreModal from './AtsScoreModal';
 
 export default function JobCard({ job }){
   const [showResumeGenerator, setShowResumeGenerator] = useState(false);
+  const [showAtsScore, setShowAtsScore] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const hasMatchScore = job.matchScore !== undefined;
@@ -199,6 +201,28 @@ export default function JobCard({ job }){
             >
               ✨ Tailor Resume
             </button>
+            <button
+              onClick={() => setShowAtsScore(true)}
+              style={{
+                background: '#f0f4ff',
+                color: '#667eea',
+                border: 'none',
+                padding: '12px 20px',
+                borderRadius: '10px',
+                cursor: 'pointer',
+                fontSize: '14px',
+                fontWeight: '600',
+                transition: 'all 0.3s ease',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px'
+              }}
+              onMouseEnter={(e) => { e.target.style.background = '#e0e7ff'; }}
+              onMouseLeave={(e) => { e.target.style.background = '#f0f4ff'; }}
+            >
+              📊 ATS Check
+            </button>
             <a href={job.url} target="_blank" rel="noreferrer" style={{textDecoration: 'none'}}>
               <button style={{
                 width: '100%',
@@ -238,6 +262,13 @@ export default function JobCard({ job }){
         <ResumeGeneratorModal
           job={job}
           onClose={() => setShowResumeGenerator(false)}
+        />
+      )}
+
+      {showAtsScore && (
+        <AtsScoreModal
+          job={job}
+          onClose={() => setShowAtsScore(false)}
         />
       )}
     </>
