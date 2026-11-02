@@ -72,6 +72,17 @@ const updateProfileSchema = z.object({
   experienceLevel: z.string().trim().max(40).optional(),
 });
 
+const PIPELINE_STAGES = ['saved', 'applied', 'interviewing', 'offer', 'rejected'];
+
+const updateApplicationSchema = z
+  .object({
+    pipelineStage: z.enum(PIPELINE_STAGES).optional(),
+    notes: z.string().max(5000).optional(),
+  })
+  .refine((d) => d.pipelineStage !== undefined || d.notes !== undefined, {
+    message: 'Provide pipelineStage and/or notes to update',
+  });
+
 const atsScoreSchema = z.object({
   jobDescription: z.string({ required_error: 'jobDescription is required' }).trim().min(30, 'jobDescription is too short'),
   jobTitle: z.string().trim().max(200).optional(),
@@ -84,4 +95,6 @@ module.exports = {
   loginSchema,
   updateProfileSchema,
   atsScoreSchema,
+  updateApplicationSchema,
+  PIPELINE_STAGES,
 };

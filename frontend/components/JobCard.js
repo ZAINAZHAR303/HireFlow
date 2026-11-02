@@ -1,10 +1,35 @@
 import { useState } from 'react';
 import ResumeGeneratorModal from './ResumeGeneratorModal';
 import AtsScoreModal from './AtsScoreModal';
+import { trackApplication, getToken } from '../lib/api';
 
 export default function JobCard({ job }){
   const [showResumeGenerator, setShowResumeGenerator] = useState(false);
   const [showAtsScore, setShowAtsScore] = useState(false);
+  const [tracked, setTracked] = useState(false);
+  const [tracking, setTracking] = useState(false);
+
+  async function handleTrack() {
+    if (tracked || tracking) return;
+    setTracking(true);
+    try {
+      const token = getToken();
+      await trackApplication(token, {
+        jobId: String(job.id || job._id || job.url || ''),
+        jobTitle: job.title,
+        companyName: job.company_name,
+        applyUrl: job.url,
+        jobDescription: (job.description || '').replace(/<[^>]+>/g, ' '),
+        pipelineStage: 'saved',
+      });
+      setTracked(true);
+    } catch (e) {
+      console.error('Failed to track job', e);
+      alert('Could not add to tracker. Please try again.');
+    } finally {
+      setTracking(false);
+    }
+  }
   const [isHovered, setIsHovered] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const hasMatchScore = job.matchScore !== undefined;
@@ -222,6 +247,27 @@ export default function JobCard({ job }){
               onMouseLeave={(e) => { e.target.style.background = '#f0f4ff'; }}
             >
               📊 ATS Check
+            </button>
+            <button
+              onClick={handleTrack}
+              disabled={tracked || tracking}
+              style={{
+                background: tracked ? '#f0fdf4' : '#f8fafc',
+                color: tracked ? '#059669' : '#475569',
+                border: `1.5px solid ${tracked ? '#86efac' : '#e2e8f0'}`,
+                padding: '12px 20px',
+                borderRadius: '10px',
+                cursor: tracked ? 'default' : 'pointer',
+                fontSize: '14px',
+                fontWeight: '600',
+                transition: 'all 0.3s ease',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px'
+              }}
+            >
+              {tracked ? '✓ Tracked' : tracking ? 'Adding…' : '➕ Track'}
             </button>
             <a href={job.url} target="_blank" rel="noreferrer" style={{textDecoration: 'none'}}>
               <button style={{

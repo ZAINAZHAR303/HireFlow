@@ -79,6 +79,26 @@ export async function getApplication(token, id) {
   return res.json();
 }
 
+export async function updateApplication(token, id, payload) {
+  const res = await fetch(`${API_BASE}/applications/applications/${id}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify(payload)
+  });
+  return res.json();
+}
+
+export async function deleteApplication(token, id) {
+  const res = await fetch(`${API_BASE}/applications/applications/${id}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return res.json();
+}
+
 // Interview preparation
 export async function generateInterviewPrep(token, payload) {
   const res = await fetch(`${API_BASE}/interview-prep/generate-interview-prep`, {

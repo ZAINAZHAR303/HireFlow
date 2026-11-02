@@ -27,6 +27,17 @@ const applicationSchema = new mongoose.Schema({
     enum: ['pending', 'in_progress', 'success', 'failed', 'timeout'],
     default: 'pending'
   },
+  // Job-search pipeline stage (independent of the auto-apply automation status).
+  pipelineStage: {
+    type: String,
+    enum: ['saved', 'applied', 'interviewing', 'offer', 'rejected'],
+    default: 'saved',
+    index: true
+  },
+  notes: {
+    type: String,
+    default: ''
+  },
   resumePath: {
     type: String
   },

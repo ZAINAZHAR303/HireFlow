@@ -4,6 +4,7 @@ const authMiddleware = require('../middleware/authMiddleware');
 const Application = require('../models/Application');
 const ApplyAgent = require('../services/applyAgent');
 const path = require('path');
+const { validateBody, updateApplicationSchema } = require('../utils/validate');
 
 // POST /analyze-form - Analyze application form without applying
 router.post('/analyze-form', authMiddleware, async (req, res) => {
@@ -133,14 +134,25 @@ router.post('/apply', authMiddleware, async (req, res) => {
 // POST /track-application - Manually track a job application
 router.post('/track-application', authMiddleware, async (req, res) => {
   try {
-    const { jobId, jobTitle, companyName, applyUrl, jobDescription } = req.body;
+    const { jobId, jobTitle, companyName, applyUrl, jobDescription, pipelineStage } = req.body;
 
     if (!jobTitle || !companyName) {
       return res.status(400).json({ error: 'Job title and company name are required' });
     }
 
-    console.log(`📊 Tracking application: ${jobTitle} at ${companyName}`);
-    console.log(`📋 Job description length: ${jobDescription?.length || 0} characters`);
+    const stage = ['saved', 'applied', 'interviewing', 'offer', 'rejected'].includes(pipelineStage)
+      ? pipelineStage
+      : 'saved';
+
+    console.log(`📊 Tracking application: ${jobTitle} at ${companyName} [${stage}]`);
+
+    // Avoid duplicate tracker entries for the same job.
+    if (jobId) {
+      const existing = await Application.findOne({ userId: req.user._id, jobId });
+      if (existing) {
+        return res.json({ success: true, application: existing, duplicate: true });
+      }
+    }
 
     // Create application record
     const application = new Application({
@@ -150,7 +162,8 @@ router.post('/track-application', authMiddleware, async (req, res) => {
       companyName,
       applyUrl: applyUrl || '',
       status: 'pending',
-      appliedAt: new Date(),
+      pipelineStage: stage,
+      appliedAt: stage === 'saved' ? undefined : new Date(),
       metadata: {
         jobDescription: jobDescription || '',
         trackedManually: true
@@ -200,6 +213,44 @@ router.get('/applications/:id', authMiddleware, async (req, res) => {
   } catch (err) {
     console.error('Error fetching application:', err);
     res.status(500).json({ error: 'Failed to fetch application' });
+  }
+});
+
+// PATCH /applications/:id - Update pipeline stage and/or notes
+router.patch('/applications/:id', authMiddleware, validateBody(updateApplicationSchema), async (req, res) => {
+  try {
+    const { pipelineStage, notes } = req.body;
+    const application = await Application.findOne({ _id: req.params.id, userId: req.user._id });
+    if (!application) {
+      return res.status(404).json({ error: 'Application not found' });
+    }
+    if (pipelineStage !== undefined) {
+      application.pipelineStage = pipelineStage;
+      // Stamp appliedAt the first time it leaves "saved".
+      if (pipelineStage !== 'saved' && !application.appliedAt) {
+        application.appliedAt = new Date();
+      }
+    }
+    if (notes !== undefined) application.notes = notes;
+    await application.save();
+    res.json({ success: true, application });
+  } catch (err) {
+    console.error('Error updating application:', err);
+    res.status(500).json({ error: 'Failed to update application' });
+  }
+});
+
+// DELETE /applications/:id - Remove an application from the tracker
+router.delete('/applications/:id', authMiddleware, async (req, res) => {
+  try {
+    const result = await Application.deleteOne({ _id: req.params.id, userId: req.user._id });
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ error: 'Application not found' });
+    }
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Error deleting application:', err);
+    res.status(500).json({ error: 'Failed to delete application' });
   }
 });
 
