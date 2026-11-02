@@ -1,0 +1,82 @@
+#hireflow-copilot-launcher {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 2147483646;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  font-size: 24px;
+  line-height: 1;
+  color: #fff;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.45);
+  transition: transform 0.15s ease;
+}
+#hireflow-copilot-launcher:hover {
+  transform: scale(1.08);
+}
+
+#hireflow-copilot-panel {
+  position: fixed;
+  bottom: 84px;
+  right: 20px;
+  z-index: 2147483647;
+  width: 300px;
+  background: #ffffff;
+  color: #1e293b;
+  border-radius: 14px;
+  box-shadow: 0 16px 48px rgba(15, 23, 42, 0.3);
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 14px;
+  overflow: hidden;
+}
+#hireflow-copilot-panel .hf-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  color: #fff;
+  font-weight: 700;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+#hireflow-copilot-panel .hf-x {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 20px;
+  cursor: pointer;
+  line-height: 1;
+}
+#hireflow-copilot-panel .hf-body {
+  padding: 16px;
+}
+#hireflow-copilot-panel .hf-who {
+  color: #64748b;
+  margin-bottom: 12px;
+}
+#hireflow-copilot-panel .hf-fill {
+  width: 100%;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 14px;
+  color: #fff;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+#hireflow-copilot-panel .hf-status {
+  margin-top: 12px;
+  font-size: 13px;
+  min-height: 18px;
+}
+#hireflow-copilot-panel .hf-status.ok { color: #059669; }
+#hireflow-copilot-panel .hf-status.warn { color: #b45309; }
+#hireflow-copilot-panel .hf-note {
+  margin: 12px 0 0;
+  font-size: 11px;
+  color: #94a3b8;
+}

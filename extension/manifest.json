@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "HireFlow Autofill Copilot",
+  "version": "1.0.0",
+  "description": "Autofill job application forms with your HireFlow profile. Review, then submit — HireFlow never submits for you.",
+  "permissions": ["storage", "activeTab", "scripting"],
+  "host_permissions": ["http://*/*", "https://*/*"],
+  "action": {
+    "default_title": "HireFlow Autofill",
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "js": ["lib/fieldMatcher.js", "content.js"],
+      "css": ["content.css"],
+      "run_at": "document_idle"
+    }
+  ]
+}
