@@ -26,7 +26,14 @@ Dashboard → **Authentication → Providers → Email**: enable it.
 - For the smoothest start, turn **Confirm email** OFF (users sign in
   immediately). Leave it ON if you want email verification — signup then tells
   users to check their inbox.
-- Optional: enable Google / LinkedIn providers later for social login.
+- **Google login**: Authentication → Providers → Google → enable, and paste a
+  Google OAuth client ID/secret (from Google Cloud console). The app shows a
+  "Continue with Google" button on login/signup.
+- **Redirect URLs**: Authentication → URL Configuration → add your site URL and
+  `.../dashboard` and `.../reset-password` to the allowed redirect list, so
+  OAuth and password-reset links land correctly.
+- Password reset works out of the box (the app has `/forgot-password` and
+  `/reset-password` pages using Supabase's reset email).
 
 ### 3. Frontend env vars
 Local: copy `frontend/.env.local.example` → `frontend/.env.local` and fill in.

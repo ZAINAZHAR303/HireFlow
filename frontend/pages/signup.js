@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { signUp } from '../lib/api';
+import { signUp, signInWithProvider } from '../lib/api';
 import { useRouter } from 'next/router';
 
 export default function SignupPage(){
@@ -282,6 +282,25 @@ export default function SignupPage(){
               )}
             </button>
           </form>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '20px 0' }}>
+            <div style={{ flex: 1, height: 1, background: '#e2e8f0' }} />
+            <span style={{ color: '#94a3b8', fontSize: 12 }}>OR</span>
+            <div style={{ flex: 1, height: 1, background: '#e2e8f0' }} />
+          </div>
+
+          <button
+            type="button"
+            onClick={async () => { setError(''); const r = await signInWithProvider('google'); if (r.error) setError(r.error); }}
+            style={{
+              width: '100%', padding: '14px', background: 'white', border: '1.5px solid #e2e8f0',
+              borderRadius: '12px', color: '#1e293b', fontSize: '15px', fontWeight: 600, cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px'
+            }}
+          >
+            <img src="https://www.google.com/favicon.ico" alt="" width="18" height="18" />
+            Continue with Google
+          </button>
 
           <div style={{
             marginTop: '24px',

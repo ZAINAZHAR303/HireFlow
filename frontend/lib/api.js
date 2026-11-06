@@ -86,6 +86,34 @@ export async function signOut() {
   if (typeof window !== 'undefined') localStorage.removeItem('hf_user');
 }
 
+// OAuth (Google / LinkedIn). Requires the provider to be enabled in the
+// Supabase dashboard (Authentication → Providers).
+export async function signInWithProvider(provider) {
+  const supabase = getSupabase();
+  const redirectTo = typeof window !== 'undefined' ? `${window.location.origin}/dashboard` : undefined;
+  const { error } = await supabase.auth.signInWithOAuth({ provider, options: { redirectTo } });
+  return { error: error?.message };
+}
+
+export async function resendConfirmation(email) {
+  const supabase = getSupabase();
+  const { error } = await supabase.auth.resend({ type: 'signup', email });
+  return { error: error?.message };
+}
+
+export async function sendPasswordReset(email) {
+  const supabase = getSupabase();
+  const redirectTo = typeof window !== 'undefined' ? `${window.location.origin}/reset-password` : undefined;
+  const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
+  return { error: error?.message };
+}
+
+export async function updatePassword(password) {
+  const supabase = getSupabase();
+  const { error } = await supabase.auth.updateUser({ password });
+  return { error: error?.message };
+}
+
 // Returns the current authenticated user object (or null). Async.
 export async function getSessionUser() {
   const supabase = getSupabase();

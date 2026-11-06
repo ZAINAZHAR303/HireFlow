@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { signIn } from '../lib/api';
+import { signIn, signInWithProvider, resendConfirmation } from '../lib/api';
 import { useRouter } from 'next/router';
 
 export default function LoginPage(){
@@ -22,6 +22,19 @@ export default function LoginPage(){
     }
     setLoading(false);
   }
+
+  async function onGoogle(){
+    setError('');
+    const res = await signInWithProvider('google');
+    if (res.error) setError(res.error);
+  }
+
+  async function onResend(){
+    const res = await resendConfirmation(email);
+    setError(res.error ? res.error : 'Confirmation email resent — check your inbox.');
+  }
+
+  const needsConfirm = /confirm/i.test(error);
 
   return (
     <div style={{
@@ -261,6 +274,49 @@ export default function LoginPage(){
               )}
             </button>
           </form>
+
+          {needsConfirm && (
+            <p style={{ textAlign: 'center', fontSize: 13, marginTop: 12 }}>
+              <button type="button" onClick={onResend} style={{ background: 'none', border: 'none', color: '#667eea', cursor: 'pointer', fontWeight: 600 }}>
+                Resend confirmation email
+              </button>
+            </p>
+          )}
+
+          <div style={{ textAlign: 'center', marginTop: 12 }}>
+            <a href="/forgot-password" style={{ color: '#64748b', fontSize: 13, textDecoration: 'none' }}>
+              Forgot your password?
+            </a>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '20px 0' }}>
+            <div style={{ flex: 1, height: 1, background: '#e2e8f0' }} />
+            <span style={{ color: '#94a3b8', fontSize: 12 }}>OR</span>
+            <div style={{ flex: 1, height: 1, background: '#e2e8f0' }} />
+          </div>
+
+          <button
+            type="button"
+            onClick={onGoogle}
+            style={{
+              width: '100%',
+              padding: '14px',
+              background: 'white',
+              border: '1.5px solid #e2e8f0',
+              borderRadius: '12px',
+              color: '#1e293b',
+              fontSize: '15px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '10px'
+            }}
+          >
+            <img src="https://www.google.com/favicon.ico" alt="" width="18" height="18" />
+            Continue with Google
+          </button>
 
           <div style={{
             marginTop: '24px',
