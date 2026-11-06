@@ -53,3 +53,7 @@ screenshots/
 # yarn.lock
 
 
+
+# Supabase CLI local state
+supabase/.temp/
+supabase/.branches/
