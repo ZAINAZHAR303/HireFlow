@@ -37,31 +37,46 @@ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_...
 ```
 Redeploy.
 
-### 4. Deploy the jobs Edge Function
+### 4. Deploy the Edge Functions
 Install the Supabase CLI, then:
 ```bash
 supabase login
 supabase link --project-ref <your-project-ref>
+
+# Set the Gemini key once (powers outreach, resume, interview prep, cover letters)
+supabase secrets set GEMINI_API_KEY=your_gemini_key
+
+# Deploy all functions
 supabase functions deploy jobs
+supabase functions deploy outreach
+supabase functions deploy resume-generate
+supabase functions deploy interview-prep
+supabase functions deploy cover-letter
 ```
-(Optional) restrict sources: Dashboard → Edge Functions → jobs → Secrets →
-`JOB_SOURCES=remotive,arbeitnow,remoteok`.
+Notes:
+- `jobs` needs no key. (Optional) restrict sources via a `JOB_SOURCES` secret.
+- Without `GEMINI_API_KEY`, outreach still returns template drafts; resume /
+  interview prep / cover letter return a clear "AI not configured" error
+  (interview prep falls back to sample questions).
 
 ## Status after this milestone
 Working end-to-end on Supabase: **sign up / sign in**, **profile**,
-**application tracker**, **job search with match scores**, **ATS check**
-(uses resume text if present, else your skills), and **recruiter outreach**
-(template drafts).
+**application tracker**, **job search with match scores**, **ATS check**,
+**recruiter outreach** (AI via Gemini, template fallback), **résumé generator**
+(JD-tailored, client-side PDF via print), **interview prep**, and **cover
+letters** — all via Edge Functions.
 
-## Not yet ported (next milestone — need a Gemini Edge Function)
-- **AI** recruiter outreach (currently template-only), **résumé generator**,
-  **interview prep**, **cover letters** — these call Gemini, which needs a
-  server-side function holding `GEMINI_API_KEY` as a Supabase secret.
-- **Résumé text extraction** (PDF/DOCX → text) for richer ATS scoring. The old
-  Python service did this; it should become an Edge Function or a client-side
-  parser.
+## Not yet ported
+- **Résumé text extraction** (PDF/DOCX → text). Resume files upload to Storage,
+  but their text isn't extracted yet, so the résumé generator / ATS use what
+  text is present (else your skills). Add this as an Edge Function (PDF parser)
+  or a client-side parser (pdf.js) next.
+- **Auto-apply agent** (Puppeteer `analyze-form` / `apply`) can't run in an Edge
+  Function (no headless Chrome). The **browser extension** already covers
+  autofill (review-then-submit), so this path is effectively replaced — those
+  buttons still point at the old backend and should be removed or repointed.
 - The **old Express backend** (`backend/`) and **ai-backend/** can be retired
-  once the above functions are deployed. They remain in the repo for now.
+  once you're happy with the above. They remain in the repo for reference.
 
 > The migration lives on the `claude/hireflow-enhancements` branch. `main`
 > still runs the working Mongo version until you've completed the setup above

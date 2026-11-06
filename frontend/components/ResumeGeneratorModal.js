@@ -2,6 +2,7 @@ import { useState } from 'react';
 import axios from 'axios';
 import ReactMarkdown from 'react-markdown';
 import SmartApplyHelper from './SmartApplyHelper';
+import { generateResume } from '../lib/api';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:4001';
 
@@ -135,22 +136,21 @@ export default function ResumeGeneratorModal({ job, onClose }) {
   const handleGenerate = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('hf_token');
-      const res = await axios.post(
-        `${API_BASE}/resume-generator/generate-resume`,
-        {
-          jobId: job.id,
-          jobTitle: job.title,
-          jobCompany: job.company_name,
-          jobDescription: job.description,
-          tone
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const res = await generateResume(null, {
+        jobId: job.id,
+        jobTitle: job.title,
+        jobCompany: job.company_name,
+        jobDescription: job.description,
+        tone
+      });
 
-      setGeneratedResume(res.data.resume.content);
-      setParsedJobData(res.data.resume.parsedJobData);
-      
+      if (res.error || !res.resume) {
+        throw new Error(res.error || res.message || 'Resume generation failed');
+      }
+
+      setGeneratedResume(res.resume.content);
+      setParsedJobData(res.resume.parsedJobData);
+
       // Save data for Smart Apply Helper and bookmarklet
       const user = JSON.parse(localStorage.getItem('hf_user') || '{}');
       const autofillData = {
@@ -160,7 +160,7 @@ export default function ResumeGeneratorModal({ job, onClose }) {
         linkedin: user.linkedin || '',
         portfolio: user.portfolio || '',
         github: user.github || '',
-        resume: res.data.resume.content,
+        resume: res.resume.content,
         jobTitle: job.title,
         companyName: job.company_name,
         timestamp: new Date().toISOString()
@@ -199,37 +199,21 @@ export default function ResumeGeneratorModal({ job, onClose }) {
     URL.revokeObjectURL(url);
   };
 
-  const handleDownloadPDF = async () => {
-    try {
-      const token = localStorage.getItem('hf_token');
-      const user = JSON.parse(localStorage.getItem('hf_user') || '{}');
-      
-      const res = await axios.post(
-        `${API_BASE}/resume-generator/download-resume-pdf`,
-        {
-          resumeContent: generatedResume,
-          candidateName: user.name || 'Candidate'
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-          responseType: 'blob'
-        }
-      );
-
-      // Create download link
-      const blob = new Blob([res.data], { type: 'application/pdf' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${job.company_name}_${job.title.replace(/\s+/g, '_')}_Resume.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    } catch (err) {
-      console.error('PDF download error:', err);
-      alert('Failed to generate PDF');
-    }
+  // Client-side PDF: open a print window with the resume and let the browser
+  // "Save as PDF". No backend needed.
+  const handleDownloadPDF = () => {
+    if (!generatedResume) return;
+    const user = JSON.parse(localStorage.getItem('hf_user') || '{}');
+    const esc = (s) => String(s).replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+    const html = `<!doctype html><html><head><meta charset="utf-8"><title>${esc(user.name || 'Resume')} — ${esc(job.title)}</title>
+      <style>body{font-family:Georgia,serif;max-width:740px;margin:40px auto;padding:0 24px;line-height:1.5;color:#1e293b;}
+      h1,h2,h3{font-family:system-ui,sans-serif;} pre{white-space:pre-wrap;font-family:inherit;}</style></head>
+      <body><pre>${esc(generatedResume)}</pre>
+      <script>window.onload=()=>{window.print();}<\/script></body></html>`;
+    const w = window.open('', '_blank');
+    if (!w) { alert('Please allow pop-ups to download the PDF.'); return; }
+    w.document.write(html);
+    w.document.close();
   };
 
   const handleAutoApply = async () => {

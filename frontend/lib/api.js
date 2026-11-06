@@ -290,9 +290,11 @@ export async function getAtsScore(_token, payload) {
   return { success: true, ...computeAtsScore(resumeText, payload.jobDescription || '') };
 }
 
-// Outreach: template draft generated client-side from the cached profile.
-// (An AI-powered version can be added later via a Gemini Edge Function.)
+// Outreach: tries the AI Edge Function; falls back to a client-side template
+// if the function isn't deployed / errors, so it always returns something.
 export async function generateOutreach(_token, payload) {
+  const res = await invoke('outreach', payload);
+  if (res && !res.error && (res.email || res.linkedin)) return res;
   const profile = getUser() || {};
   const out = fallbackOutreach({
     user: profile,
@@ -300,6 +302,11 @@ export async function generateOutreach(_token, payload) {
     tone: payload.tone || 'professional',
   });
   return { ...out, usedAI: false };
+}
+
+// JD-tailored resume via the Gemini Edge Function.
+export async function generateResume(_token, payload) {
+  return invoke('resume-generate', payload);
 }
 
 // Interview prep / cover letter still require a server-side AI call; these

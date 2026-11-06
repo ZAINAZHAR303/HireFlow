@@ -42,6 +42,8 @@ create table if not exists public.applications (
   pipeline_stage text not null default 'saved'
     check (pipeline_stage in ('saved','applied','interviewing','offer','rejected')),
   notes text default '',
+  interview_prep jsonb,
+  cover_letter text,
   applied_at timestamptz,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
