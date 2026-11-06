@@ -7,27 +7,6 @@ on:
     branches: [main]
 
 jobs:
-  backend:
-    name: Backend tests
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: backend
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-          cache-dependency-path: backend/package-lock.json
-      - name: Install dependencies
-        run: npm ci
-        env:
-          # Puppeteer's Chromium isn't needed to run unit tests.
-          PUPPETEER_SKIP_DOWNLOAD: "true"
-      - name: Run tests
-        run: npm test
-
   extension:
     name: Extension tests
     runs-on: ubuntu-latest
@@ -57,4 +36,5 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          NEXT_PUBLIC_API_BASE: http://localhost:4001
+          NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci_placeholder
