@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { getUser, fetchJobs, updateProfile, saveUser, requireAuth } from '../lib/api';
 import JobCard from '../components/JobCard';
 import ResumeUploadModal from '../components/ResumeUploadModal';
@@ -15,6 +15,34 @@ export default function Dashboard(){
   const [noJobsMessage, setNoJobsMessage] = useState('');
   const router = useRouter();
   const [user, setUser] = useState(null);
+
+  // Search / filter / pagination
+  const [query, setQuery] = useState('');
+  const [sourceFilter, setSourceFilter] = useState('');
+  const [typeFilter, setTypeFilter] = useState('');
+  const [visibleCount, setVisibleCount] = useState(20);
+
+  const PAGE = 20;
+  const sources = useMemo(() => Array.from(new Set(jobs.map(j => j.source).filter(Boolean))).sort(), [jobs]);
+  const jobTypes = useMemo(() => Array.from(new Set(jobs.map(j => (j.job_type || '').trim()).filter(Boolean))).sort(), [jobs]);
+
+  const filteredJobs = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return jobs.filter(j => {
+      if (sourceFilter && j.source !== sourceFilter) return false;
+      if (typeFilter && (j.job_type || '') !== typeFilter) return false;
+      if (q) {
+        const hay = `${j.title || ''} ${j.company_name || ''} ${(j.tags || []).join(' ')} ${j.category || ''}`.toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    });
+  }, [jobs, query, sourceFilter, typeFilter]);
+
+  // Reset how many are shown whenever the result set changes.
+  useEffect(() => { setVisibleCount(PAGE); }, [query, sourceFilter, typeFilter, jobs]);
+
+  const visibleJobs = filteredJobs.slice(0, visibleCount);
 
   useEffect(()=>{
     (async () => {
@@ -498,10 +526,53 @@ export default function Dashboard(){
           </div>
         )}
         
+        {/* Search + filters */}
+        {jobs.length > 0 && (
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center', marginBottom: 16 }}>
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="🔎 Search title, company, skill…"
+              style={{ flex: '1 1 260px', minWidth: 200, padding: '10px 14px', border: '1px solid #e2e8f0', borderRadius: 10, fontSize: 14 }}
+            />
+            <select value={sourceFilter} onChange={(e) => setSourceFilter(e.target.value)} style={{ padding: '10px 12px', border: '1px solid #e2e8f0', borderRadius: 10, fontSize: 14, color: '#334155', background: 'white' }}>
+              <option value="">All sources</option>
+              {sources.map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
+            <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} style={{ padding: '10px 12px', border: '1px solid #e2e8f0', borderRadius: 10, fontSize: 14, color: '#334155', background: 'white' }}>
+              <option value="">All types</option>
+              {jobTypes.map(t => <option key={t} value={t}>{t}</option>)}
+            </select>
+            {(query || sourceFilter || typeFilter) && (
+              <button onClick={() => { setQuery(''); setSourceFilter(''); setTypeFilter(''); }} style={{ padding: '10px 14px', border: 'none', borderRadius: 10, background: '#f1f5f9', color: '#475569', cursor: 'pointer', fontSize: 14, fontWeight: 600 }}>
+                Clear
+              </button>
+            )}
+            <span style={{ color: '#64748b', fontSize: 13, marginLeft: 'auto' }}>
+              Showing {Math.min(visibleCount, filteredJobs.length)} of {filteredJobs.length}
+            </span>
+          </div>
+        )}
+
         {/* Jobs List */}
         <div>
-          {jobs.map(job => <JobCard key={job.id} job={job} />)}
+          {visibleJobs.map(job => <JobCard key={job.id} job={job} />)}
         </div>
+
+        {jobs.length > 0 && filteredJobs.length === 0 && (
+          <div style={{ textAlign: 'center', color: '#64748b', padding: '32px 0' }}>
+            No jobs match your filters. <button onClick={() => { setQuery(''); setSourceFilter(''); setTypeFilter(''); }} style={{ background: 'none', border: 'none', color: '#667eea', cursor: 'pointer', fontWeight: 600 }}>Clear filters</button>
+          </div>
+        )}
+
+        {visibleCount < filteredJobs.length && (
+          <div style={{ textAlign: 'center', marginTop: 8 }}>
+            <button onClick={() => setVisibleCount(c => c + PAGE)} style={{ padding: '12px 28px', border: '2px solid #667eea', borderRadius: 10, background: 'white', color: '#667eea', cursor: 'pointer', fontSize: 15, fontWeight: 600 }}>
+              Load more ({filteredJobs.length - visibleCount} left)
+            </button>
+          </div>
+        )}
       </div>
 
       {showUploadModal && (
