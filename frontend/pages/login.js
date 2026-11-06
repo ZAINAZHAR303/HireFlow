@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { login, saveToken, saveUser } from '../lib/api';
+import { signIn } from '../lib/api';
 import { useRouter } from 'next/router';
 
 export default function LoginPage(){
@@ -14,13 +14,11 @@ export default function LoginPage(){
     e.preventDefault();
     setError('');
     setLoading(true);
-    const res = await login({ email, password });
-    if (res.token) {
-      saveToken(res.token);
-      saveUser(res.user);
-      router.push('/dashboard');
-    } else {
+    const res = await signIn({ email, password });
+    if (res.error) {
       setError(res.error || 'Login failed');
+    } else {
+      router.push('/dashboard');
     }
     setLoading(false);
   }

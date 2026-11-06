@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import { getToken, getApplications, updateApplication, deleteApplication } from '../lib/api';
+import { requireAuth, getApplications, updateApplication, deleteApplication } from '../lib/api';
 
 const STAGES = [
   { key: 'saved', label: 'Saved', color: '#64748b' },
@@ -16,18 +16,17 @@ export default function Tracker() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = getToken();
-    if (!token) {
-      router.push('/login');
-      return;
-    }
-    load(token);
+    (async () => {
+      const user = await requireAuth(router);
+      if (!user) return;
+      load();
+    })();
   }, []);
 
-  async function load(token) {
+  async function load() {
     setLoading(true);
     try {
-      const res = await getApplications(token);
+      const res = await getApplications();
       setApps(res.applications || []);
     } catch (e) {
       console.error('Failed to load applications', e);
@@ -37,26 +36,24 @@ export default function Tracker() {
   }
 
   async function moveTo(app, stage) {
-    const token = getToken();
     // Optimistic update
     setApps((prev) => prev.map((a) => (a._id === app._id ? { ...a, pipelineStage: stage } : a)));
     try {
-      await updateApplication(token, app._id, { pipelineStage: stage });
+      await updateApplication(null, app._id, { pipelineStage: stage });
     } catch (e) {
       console.error('Failed to update stage', e);
-      load(token); // revert on error
+      load(); // revert on error
     }
   }
 
   async function remove(app) {
     if (!confirm(`Remove "${app.jobTitle}" from your tracker?`)) return;
-    const token = getToken();
     setApps((prev) => prev.filter((a) => a._id !== app._id));
     try {
-      await deleteApplication(token, app._id);
+      await deleteApplication(null, app._id);
     } catch (e) {
       console.error('Failed to delete', e);
-      load(token);
+      load();
     }
   }
 

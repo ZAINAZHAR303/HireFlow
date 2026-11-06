@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getToken, getUser, fetchJobs, updateProfile, saveUser } from '../lib/api';
+import { getUser, fetchJobs, updateProfile, saveUser, requireAuth } from '../lib/api';
 import JobCard from '../components/JobCard';
 import ResumeUploadModal from '../components/ResumeUploadModal';
 import JobPreferencesModal from '../components/JobPreferencesModal';
@@ -17,21 +17,16 @@ export default function Dashboard(){
   const [user, setUser] = useState(null);
 
   useEffect(()=>{
-    const token = getToken();
-    const userData = getUser();
-    if (!token) { router.push('/login'); return; }
-    
-    setUser(userData);
-    // Check if user has resume
-    if (userData?.resumeId) {
-      setHasResume(true);
-    }
+    (async () => {
+      const userData = await requireAuth(router);
+      if (!userData) return;
+      setUser(userData);
+      if (userData?.resumeId) setHasResume(true);
+    })();
   },[]);
 
   async function handleFindJobs() {
-    const token = getToken();
-    if (!token) { router.push('/login'); return; }
-    
+
     // Check if user has set job preferences (skills or preferredJobTypes)
     if ((!user?.skills || user.skills.length === 0) && (!user?.preferredJobTypes || user.preferredJobTypes.length === 0)) {
       setShowPreferencesModal(true);
@@ -42,7 +37,7 @@ export default function Dashboard(){
     setLoading(true);
     setNoJobsMessage('');
     try {
-      const res = await fetchJobs(token);
+      const res = await fetchJobs();
       console.log('📦 API Response:', { count: res.count, jobsLength: res.jobs?.length, hasMessage: !!res.message });
       if (res.jobs) setJobs(res.jobs);
       if (res.message) setNoJobsMessage(res.message);
@@ -62,11 +57,8 @@ export default function Dashboard(){
   }
 
   async function handleSavePreferences(preferences) {
-    const token = getToken();
-    if (!token) return;
-    
     try {
-      const res = await updateProfile(token, preferences);
+      const res = await updateProfile(null, preferences);
       if (res.user) {
         const updatedUser = { ...user, ...res.user };
         setUser(updatedUser);

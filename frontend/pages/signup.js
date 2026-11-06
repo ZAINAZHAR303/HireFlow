@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { signup, saveToken, saveUser } from '../lib/api';
+import { signUp } from '../lib/api';
 import { useRouter } from 'next/router';
 
 export default function SignupPage(){
@@ -14,14 +14,15 @@ export default function SignupPage(){
     e.preventDefault();
     setError('');
     setLoading(true);
-    const body = { name, email, password };
-    const res = await signup(body);
-    if (res.token) {
-      saveToken(res.token);
-      saveUser(res.user);
-      router.push('/dashboard');
-    } else {
+    const res = await signUp({ name, email, password });
+    if (res.error) {
       setError(res.error || 'Signup failed');
+    } else if (res.needsConfirmation) {
+      setError('');
+      alert('Check your email to confirm your account, then sign in.');
+      router.push('/login');
+    } else {
+      router.push('/dashboard');
     }
     setLoading(false);
   }

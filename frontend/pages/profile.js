@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import { getToken, getUser, getApplications } from '../lib/api';
+import { getUser, getApplications, requireAuth } from '../lib/api';
 import InterviewPrepModal from '../components/InterviewPrepModal';
 
 export default function ProfilePage() {
@@ -12,22 +12,18 @@ export default function ProfilePage() {
   const [showInterviewPrep, setShowInterviewPrep] = useState(false);
 
   useEffect(() => {
-    const token = getToken();
-    const userData = getUser();
-    
-    if (!token) {
-      router.push('/login');
-      return;
-    }
-
-    setUser(userData);
-    loadApplications(token);
+    (async () => {
+      const userData = await requireAuth(router);
+      if (!userData) return;
+      setUser(userData);
+      loadApplications();
+    })();
   }, []);
 
-  async function loadApplications(token) {
+  async function loadApplications() {
     setLoading(true);
     try {
-      const res = await getApplications(token);
+      const res = await getApplications();
       if (res.applications) {
         setApplications(res.applications);
       }
@@ -444,8 +440,7 @@ export default function ProfilePage() {
             setShowInterviewPrep(false);
             setSelectedApplication(null);
             // Reload applications to get updated interview prep data
-            const token = getToken();
-            if (token) loadApplications(token);
+            loadApplications();
           }}
         />
       )}
