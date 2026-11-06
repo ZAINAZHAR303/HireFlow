@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { toast } from "../lib/toast";
 import ResumeGeneratorModal from './ResumeGeneratorModal';
 import AtsScoreModal from './AtsScoreModal';
 import OutreachModal from './OutreachModal';
@@ -27,7 +28,7 @@ export default function JobCard({ job }){
       setTracked(true);
     } catch (e) {
       console.error('Failed to track job', e);
-      alert('Could not add to tracker. Please try again.');
+      toast('Could not add to tracker. Please try again.');
     } finally {
       setTracking(false);
     }

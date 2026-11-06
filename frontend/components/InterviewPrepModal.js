@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { toast } from "../lib/toast";
 import { getToken, generateInterviewPrep, generateCoverLetter, getUser, getApplication } from '../lib/api';
 
 export default function InterviewPrepModal({ application, onClose }) {
@@ -67,11 +68,11 @@ export default function InterviewPrepModal({ application, onClose }) {
           console.log('Could not refetch application:', err);
         }
       } else {
-        alert(res.error || 'Failed to generate interview preparation');
+        toast(res.error || 'Failed to generate interview preparation');
       }
     } catch (err) {
       console.error('Failed to generate interview prep:', err);
-      alert('Failed to generate interview preparation');
+      toast('Failed to generate interview preparation');
     }
     setLoading(false);
   }
@@ -106,18 +107,18 @@ export default function InterviewPrepModal({ application, onClose }) {
           console.log('Could not refetch application:', err);
         }
       } else {
-        alert(res.error || 'Failed to generate cover letter');
+        toast(res.error || 'Failed to generate cover letter');
       }
     } catch (err) {
       console.error('Failed to generate cover letter:', err);
-      alert('Failed to generate cover letter');
+      toast('Failed to generate cover letter');
     }
     setLoadingCoverLetter(false);
   }
 
   function copyToClipboard(text) {
     navigator.clipboard.writeText(text);
-    alert('✅ Copied to clipboard!');
+    toast('✅ Copied to clipboard!');
   }
 
   return (

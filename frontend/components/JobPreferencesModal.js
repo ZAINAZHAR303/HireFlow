@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { toast } from "../lib/toast";
 import { uploadResume } from '../lib/api';
 import { extractResumeText } from '../lib/extractResumeText';
 
@@ -26,15 +27,15 @@ export default function JobPreferencesModal({ onClose, onSave }) {
       const text = await extractResumeText(file);
       const res = await uploadResume(null, file, text);
       if (res.error) {
-        alert(res.error);
+        toast(res.error);
       } else if (res.textLength > 0) {
-        alert('✅ Resume uploaded and read. Add your skills below to tailor matches.');
+        toast('✅ Resume uploaded and read. Add your skills below to tailor matches.');
       } else {
-        alert('Resume uploaded. We could not read its text — enter your skills below.');
+        toast('Resume uploaded. We could not read its text — enter your skills below.');
       }
     } catch (err) {
       console.error('Failed to upload resume:', err);
-      alert('Failed to upload resume. Please try again.');
+      toast('Failed to upload resume. Please try again.');
     }
     
     setUploadingResume(false);

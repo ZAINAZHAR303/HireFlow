@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { toast } from "../lib/toast";
 import { signUp, signInWithProvider } from '../lib/api';
 import { useRouter } from 'next/router';
 
@@ -19,7 +20,7 @@ export default function SignupPage(){
       setError(res.error || 'Signup failed');
     } else if (res.needsConfirmation) {
       setError('');
-      alert('Check your email to confirm your account, then sign in.');
+      toast('Check your email to confirm your account, then sign in.');
       router.push('/login');
     } else {
       router.push('/dashboard');

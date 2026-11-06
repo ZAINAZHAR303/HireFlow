@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { toast } from "../lib/toast";
 import { getUser, uploadResume, updateProfile } from '../lib/api';
 import { extractResumeText } from '../lib/extractResumeText';
 
@@ -65,7 +66,7 @@ export default function ResumeUploadModal({ onClose, onUploaded }) {
         const text = await extractResumeText(file);
         const result = await uploadResume(null, file, text);
         if (result.error) {
-          alert(result.error);
+          toast(result.error);
           setUploading(false);
           return;
         }
@@ -74,7 +75,7 @@ export default function ResumeUploadModal({ onClose, onUploaded }) {
       // Save preferences to Supabase.
       const data = await updateProfile(null, profileData);
       if (data.error) {
-        alert(data.error);
+        toast(data.error);
         setUploading(false);
         return;
       }
@@ -89,7 +90,7 @@ export default function ResumeUploadModal({ onClose, onUploaded }) {
       });
     } catch (err) {
       console.error('Upload error:', err);
-      alert('Update failed. Please try again.');
+      toast('Update failed. Please try again.');
     }
     setUploading(false);
   }

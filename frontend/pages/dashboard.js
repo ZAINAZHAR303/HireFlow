@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
+import { toast } from "../lib/toast";
 import { getUser, fetchJobs, updateProfile, saveUser, requireAuth } from '../lib/api';
 import JobCard from '../components/JobCard';
 import ResumeUploadModal from '../components/ResumeUploadModal';
@@ -79,7 +80,7 @@ export default function Dashboard(){
       }
     } catch (err) {
       console.error('Failed to fetch jobs:', err);
-      alert('Failed to fetch jobs. Please try again.');
+      toast('Failed to fetch jobs. Please try again.');
     }
     setLoading(false);
   }
@@ -96,11 +97,11 @@ export default function Dashboard(){
         // Automatically fetch jobs after saving preferences
         setTimeout(() => handleFindJobs(), 500);
       } else {
-        alert(res.error || 'Failed to save preferences');
+        toast(res.error || 'Failed to save preferences');
       }
     } catch (err) {
       console.error('Failed to save preferences:', err);
-      alert('Failed to save preferences. Please try again.');
+      toast('Failed to save preferences. Please try again.');
     }
   }
 

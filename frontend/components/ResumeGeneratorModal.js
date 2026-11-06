@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { toast } from "../lib/toast";
 import ReactMarkdown from 'react-markdown';
 import { generateResume } from '../lib/api';
 
@@ -158,11 +159,11 @@ export default function ResumeGeneratorModal({ job, onClose }) {
       const errorMessage = err.response?.data?.message || err.message;
       
       if (errorMessage.includes('overloaded') || errorMessage.includes('503')) {
-        alert('⚠️ AI service is temporarily busy. Please try again in a few seconds.');
+        toast('⚠️ AI service is temporarily busy. Please try again in a few seconds.');
       } else if (errorMessage.includes('token limit')) {
-        alert('⚠️ Job description or resume is too long. Please try with a shorter version.');
+        toast('⚠️ Job description or resume is too long. Please try with a shorter version.');
       } else {
-        alert('❌ Failed to generate resume: ' + errorMessage);
+        toast('❌ Failed to generate resume: ' + errorMessage);
       }
     } finally {
       setLoading(false);
@@ -171,7 +172,7 @@ export default function ResumeGeneratorModal({ job, onClose }) {
 
   const handleCopy = () => {
     navigator.clipboard.writeText(generatedResume);
-    alert('Resume copied to clipboard!');
+    toast('Resume copied to clipboard!');
   };
 
   const handleDownload = () => {
@@ -198,7 +199,7 @@ export default function ResumeGeneratorModal({ job, onClose }) {
       <body><pre>${esc(generatedResume)}</pre>
       <script>window.onload=()=>{window.print();}<\/script></body></html>`;
     const w = window.open('', '_blank');
-    if (!w) { alert('Please allow pop-ups to download the PDF.'); return; }
+    if (!w) { toast('Please allow pop-ups to download the PDF.'); return; }
     w.document.write(html);
     w.document.close();
   };
