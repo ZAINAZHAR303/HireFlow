@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { getToken, getUser, uploadResume } from '../lib/api';
+import { getUser, uploadResume, updateProfile } from '../lib/api';
+import { extractResumeText } from '../lib/extractResumeText';
 
 export default function ResumeUploadModal({ onClose, onUploaded }) {
   const [file, setFile] = useState(null);
@@ -46,13 +47,11 @@ export default function ResumeUploadModal({ onClose, onUploaded }) {
     e.preventDefault();
 
     setUploading(true);
-    const token = getToken();
 
     try {
-      // Update profile with new preferences (even without resume)
       const skillsArray = skills.split(',').map(s => s.trim()).filter(Boolean);
       const locationsArray = preferredLocations.split(',').map(s => s.trim()).filter(Boolean);
-      
+
       const profileData = {
         skills: skillsArray,
         preferredJobTypes,
@@ -61,58 +60,33 @@ export default function ResumeUploadModal({ onClose, onUploaded }) {
         location
       };
 
+      // Upload the resume (if any), extracting its text in the browser first.
       if (file) {
-        // Upload resume and update profile
-        const result = await uploadResume(token, file);
+        const text = await extractResumeText(file);
+        const result = await uploadResume(null, file, text);
         if (result.error) {
           alert(result.error);
-        } else {
-          // Also update other preferences
-          const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:4001'}/auth/update-profile`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-            body: JSON.stringify(profileData)
-          });
-          const data = await res.json();
-          
-          // Merge AI-extracted data with user preferences
-          const mergedData = {
-            ...result,
-            preferredJobTypes,
-            preferredLocations: locationsArray,
-            phone,
-            location
-          };
-          
-          // Update localStorage
-          const updatedUser = { ...user, ...data.user, ...result };
-          localStorage.setItem('hf_user', JSON.stringify(updatedUser));
-          
-          onUploaded(mergedData);
-        }
-      } else {
-        // Just update preferences without new resume
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:4001'}/auth/update-profile`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-          body: JSON.stringify(profileData)
-        });
-        const data = await res.json();
-        if (data.error) {
-          alert(data.error);
-        } else {
-          // Update localStorage
-          const updatedUser = { ...user, ...data.user };
-          localStorage.setItem('hf_user', JSON.stringify(updatedUser));
-          
-          onUploaded({ 
-            extractedSkills: skillsArray, 
-            jobCategories: user.jobCategories || [],
-            preferredJobTypes,
-            preferredLocations: locationsArray
-          });
+          setUploading(false);
+          return;
         }
       }
+
+      // Save preferences to Supabase.
+      const data = await updateProfile(null, profileData);
+      if (data.error) {
+        alert(data.error);
+        setUploading(false);
+        return;
+      }
+
+      const updatedUser = { ...user, ...data.user };
+      localStorage.setItem('hf_user', JSON.stringify(updatedUser));
+      onUploaded({
+        ...data.user,
+        extractedSkills: skillsArray,
+        preferredJobTypes,
+        preferredLocations: locationsArray,
+      });
     } catch (err) {
       console.error('Upload error:', err);
       alert('Update failed. Please try again.');

@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { getToken, uploadResume } from '../lib/api';
+import { uploadResume } from '../lib/api';
+import { extractResumeText } from '../lib/extractResumeText';
 
 export default function JobPreferencesModal({ onClose, onSave }) {
   const [phone, setPhone] = useState('');
@@ -22,17 +23,14 @@ export default function JobPreferencesModal({ onClose, onSave }) {
     setUploadingResume(true);
     
     try {
-      const token = getToken();
-      const res = await uploadResume(token, file);
-      
-      if (res.extractedSkills) {
-        setExtractedSkills(res.extractedSkills);
-        setSkills(res.extractedSkills.join(', '));
-        
-        // Show success message
-        alert('✅ Resume uploaded! Skills extracted automatically.');
+      const text = await extractResumeText(file);
+      const res = await uploadResume(null, file, text);
+      if (res.error) {
+        alert(res.error);
+      } else if (res.textLength > 0) {
+        alert('✅ Resume uploaded and read. Add your skills below to tailor matches.');
       } else {
-        alert('Resume uploaded successfully!');
+        alert('Resume uploaded. We could not read its text — enter your skills below.');
       }
     } catch (err) {
       console.error('Failed to upload resume:', err);

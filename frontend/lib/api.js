@@ -321,7 +321,7 @@ export async function generateCoverLetter(_token, payload) {
 }
 
 // ---- Resume upload (Supabase Storage + resumes table) ----
-export async function uploadResume(_token, file) {
+export async function uploadResume(_token, file, text = '') {
   const supabase = getSupabase();
   const user = await getSessionUser();
   if (!user) return { error: 'Not signed in' };
@@ -330,11 +330,11 @@ export async function uploadResume(_token, file) {
   if (upErr) return { error: upErr.message };
   const { data, error } = await supabase
     .from('resumes')
-    .insert({ user_id: user.id, file_name: file.name, storage_path: path })
+    .insert({ user_id: user.id, file_name: file.name, storage_path: path, text: text || '' })
     .select()
     .single();
   if (error) return { error: error.message };
-  return { resumeId: data.id, storagePath: path };
+  return { resumeId: data.id, storagePath: path, textLength: (text || '').length };
 }
 
 // ---- Local cache of the profile for synchronous UI display ----
