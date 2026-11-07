@@ -280,6 +280,22 @@ export default function Dashboard(){
               📄 My Résumés
             </button>
             <button
+              onClick={async () => {
+                const next = !user?.jobAlertsEnabled;
+                const res = await updateProfile(null, { jobAlertsEnabled: next });
+                if (res.user) { setUser(res.user); saveUser(res.user); toast(next ? '🔔 Daily job alerts ON' : 'Daily job alerts off'); }
+              }}
+              style={{
+                background: user?.jobAlertsEnabled ? '#ecfdf5' : 'white',
+                color: user?.jobAlertsEnabled ? '#059669' : '#667eea',
+                border: `2px solid ${user?.jobAlertsEnabled ? '#6ee7b7' : '#e2e8f0'}`,
+                padding: '12px 24px', borderRadius: '10px', cursor: 'pointer',
+                fontSize: '14px', fontWeight: '600', transition: 'all 0.3s ease'
+              }}
+            >
+              {user?.jobAlertsEnabled ? '🔔 Alerts On' : '🔕 Daily Alerts'}
+            </button>
+            <button
               onClick={() => setShowUploadModal(true)}
               style={{
                 background: 'white',

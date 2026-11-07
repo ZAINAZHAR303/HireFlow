@@ -66,6 +66,18 @@ Notes:
   interview prep / cover letter return a clear "AI not configured" error
   (interview prep falls back to sample questions).
 
+## Daily job-alert digest (optional)
+Users toggle "Daily Alerts" on the dashboard. A scheduled function emails each
+opted-in user their top new matches. To turn it on:
+1. **Email provider (Resend):** `supabase secrets set RESEND_API_KEY=... RESEND_FROM='HireFlow <you@yourdomain>'`
+   (without it, the digest computes matches but sends nothing).
+2. **Deploy:** `supabase functions deploy daily-digest` (JWT stays on; the
+   function only accepts a `service_role` caller).
+3. **Schedule:** run `supabase/cron/daily-digest.sql` in the SQL Editor (stores
+   your service_role key in Vault, then schedules a daily `pg_cron` call).
+Dry-run test (no emails sent): POST `/functions/v1/daily-digest` with
+`{"dryRun":true}` and an `Authorization: Bearer <service_role>` header.
+
 ## Status after this milestone
 Working end-to-end on Supabase: **sign up / sign in**, **profile**,
 **application tracker**, **job search with match scores**, **ATS check**,
