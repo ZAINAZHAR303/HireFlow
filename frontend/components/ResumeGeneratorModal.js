@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { toast } from "../lib/toast";
 import ReactMarkdown from 'react-markdown';
-import { generateResume } from '../lib/api';
+import { generateResume, saveResumeVersion } from '../lib/api';
 
 
 export default function ResumeGeneratorModal({ job, onClose }) {
@@ -154,6 +154,17 @@ export default function ResumeGeneratorModal({ job, onClose }) {
         timestamp: new Date().toISOString()
       };
       localStorage.setItem('hireflow_autofill_data', JSON.stringify(autofillData));
+
+      // Save to the résumé library (best-effort).
+      try {
+        await saveResumeVersion({
+          jobTitle: job.title,
+          companyName: job.company_name,
+          content: res.resume.content,
+          parsedJobData: res.resume.parsedJobData,
+        });
+        toast('✅ Saved to My Résumés');
+      } catch (_) { /* non-blocking */ }
     } catch (err) {
       console.error('Resume generation error:', err);
       const errorMessage = err.response?.data?.message || err.message;

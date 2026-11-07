@@ -262,6 +262,24 @@ export default function Dashboard(){
               🗂️ My Applications
             </button>
             <button
+              onClick={() => router.push('/resumes')}
+              style={{
+                background: 'white',
+                color: '#667eea',
+                border: '2px solid #e2e8f0',
+                padding: '12px 24px',
+                borderRadius: '10px',
+                cursor: 'pointer',
+                fontSize: '14px',
+                fontWeight: '600',
+                transition: 'all 0.3s ease'
+              }}
+              onMouseEnter={(e) => { e.target.style.borderColor = '#667eea'; e.target.style.transform = 'translateY(-2px)'; }}
+              onMouseLeave={(e) => { e.target.style.borderColor = '#e2e8f0'; e.target.style.transform = 'translateY(0)'; }}
+            >
+              📄 My Résumés
+            </button>
+            <button
               onClick={() => setShowUploadModal(true)}
               style={{
                 background: 'white',

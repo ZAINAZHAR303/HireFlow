@@ -29,6 +29,7 @@ function profileToClient(row) {
     preferredJobTypes: row.preferred_job_types || [],
     preferredLocations: row.preferred_locations || [],
     experienceLevel: row.experience_level || '',
+    jobAlertsEnabled: row.job_alerts_enabled || false,
   };
 }
 
@@ -160,6 +161,7 @@ export async function updateProfile(_token, payload) {
   if (payload.github !== undefined) update.github = payload.github;
   if (payload.location !== undefined) update.location = payload.location;
   if (payload.experienceLevel !== undefined) update.experience_level = payload.experienceLevel;
+  if (payload.jobAlertsEnabled !== undefined) update.job_alerts_enabled = payload.jobAlertsEnabled;
   if (payload.skills !== undefined) update.skills = splitList(payload.skills);
   if (payload.preferredJobTypes !== undefined) update.preferred_job_types = splitList(payload.preferredJobTypes);
   if (payload.preferredLocations !== undefined) update.preferred_locations = splitList(payload.preferredLocations);
@@ -346,6 +348,54 @@ export async function generateInterviewPrep(_token, payload) {
 
 export async function generateCoverLetter(_token, payload) {
   return invoke('cover-letter', payload);
+}
+
+// ---- Resume version library ----
+export async function saveResumeVersion(payload) {
+  const supabase = getSupabase();
+  const user = await getSessionUser();
+  if (!user) return { error: 'Not signed in' };
+  const { data, error } = await supabase
+    .from('resume_versions')
+    .insert({
+      user_id: user.id,
+      title: payload.title || `${payload.jobTitle || 'Resume'}${payload.companyName ? ' @ ' + payload.companyName : ''}`,
+      job_title: payload.jobTitle || '',
+      company_name: payload.companyName || '',
+      content: payload.content,
+      parsed_job_data: payload.parsedJobData || null,
+    })
+    .select()
+    .single();
+  if (error) return { error: error.message };
+  return { id: data.id };
+}
+
+export async function listResumeVersions() {
+  const supabase = getSupabase();
+  const { data, error } = await supabase
+    .from('resume_versions')
+    .select('*')
+    .order('created_at', { ascending: false });
+  if (error) return { versions: [], error: error.message };
+  return {
+    versions: (data || []).map((r) => ({
+      id: r.id,
+      title: r.title,
+      jobTitle: r.job_title,
+      companyName: r.company_name,
+      content: r.content,
+      parsedJobData: r.parsed_job_data,
+      createdAt: r.created_at,
+    })),
+  };
+}
+
+export async function deleteResumeVersion(id) {
+  const supabase = getSupabase();
+  const { error } = await supabase.from('resume_versions').delete().eq('id', id);
+  if (error) return { error: error.message };
+  return { success: true };
 }
 
 // ---- Resume upload (Supabase Storage + resumes table) ----
