@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { toast } from "../lib/toast";
 import { getUser, uploadResume, updateProfile } from '../lib/api';
 import { extractResumeText } from '../lib/extractResumeText';
+import { parseResumeProfile } from '../lib/resumeParse';
 
 export default function ResumeUploadModal({ onClose, onUploaded }) {
   const [file, setFile] = useState(null);
@@ -50,18 +51,12 @@ export default function ResumeUploadModal({ onClose, onUploaded }) {
     setUploading(true);
 
     try {
-      const skillsArray = skills.split(',').map(s => s.trim()).filter(Boolean);
+      let skillsArray = skills.split(',').map(s => s.trim()).filter(Boolean);
       const locationsArray = preferredLocations.split(',').map(s => s.trim()).filter(Boolean);
+      let resumePhone = phone;
 
-      const profileData = {
-        skills: skillsArray,
-        preferredJobTypes,
-        preferredLocations: showLocationField ? locationsArray : [],
-        phone,
-        location
-      };
-
-      // Upload the resume (if any), extracting its text in the browser first.
+      // Upload the resume (if any), extracting its text in the browser first,
+      // then auto-extract skills + contact info from it.
       if (file) {
         const text = await extractResumeText(file);
         const result = await uploadResume(null, file, text);
@@ -70,7 +65,22 @@ export default function ResumeUploadModal({ onClose, onUploaded }) {
           setUploading(false);
           return;
         }
+        const parsed = parseResumeProfile(text);
+        if (parsed.skills.length) {
+          // Merge résumé skills with whatever the user typed (de-duped).
+          skillsArray = Array.from(new Set([...skillsArray, ...parsed.skills]));
+          setSkills(skillsArray.join(', '));
+        }
+        if (!resumePhone && parsed.phone) resumePhone = parsed.phone;
       }
+
+      const profileData = {
+        skills: skillsArray,
+        preferredJobTypes,
+        preferredLocations: showLocationField ? locationsArray : [],
+        phone: resumePhone,
+        location
+      };
 
       // Save preferences to Supabase.
       const data = await updateProfile(null, profileData);

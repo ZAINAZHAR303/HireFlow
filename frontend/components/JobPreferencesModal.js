@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { toast } from "../lib/toast";
 import { uploadResume } from '../lib/api';
 import { extractResumeText } from '../lib/extractResumeText';
+import { parseResumeProfile } from '../lib/resumeParse';
 
 export default function JobPreferencesModal({ onClose, onSave }) {
   const [phone, setPhone] = useState('');
@@ -29,7 +30,18 @@ export default function JobPreferencesModal({ onClose, onSave }) {
       if (res.error) {
         toast(res.error);
       } else if (res.textLength > 0) {
-        toast('✅ Resume uploaded and read. Add your skills below to tailor matches.');
+        // Auto-extract skills + contact links from the résumé text.
+        const parsed = parseResumeProfile(text);
+        if (parsed.skills.length) {
+          setSkills(parsed.skills.join(', '));
+          setExtractedSkills(parsed.skills);
+        }
+        if (parsed.github) setGithub((g) => g || parsed.github);
+        if (parsed.linkedin) setLinkedin((l) => l || parsed.linkedin);
+        if (parsed.phone) setPhone((p) => p || parsed.phone);
+        toast(parsed.skills.length
+          ? `✅ Found ${parsed.skills.length} skills in your resume — review and edit below.`
+          : 'Resume read, but no known skills detected — add them below.');
       } else {
         toast('Resume uploaded. We could not read its text — enter your skills below.');
       }
@@ -166,7 +178,7 @@ export default function JobPreferencesModal({ onClose, onSave }) {
               </p>
             )}
             <p style={{ marginTop: '8px', fontSize: '13px', color: '#64748b' }}>
-              We'll automatically extract your skills from your resume
+              We'll read your resume and auto-fill your skills (review before saving)
             </p>
           </div>
           
