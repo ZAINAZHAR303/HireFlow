@@ -2,7 +2,7 @@
 // Generates STAR-method interview questions + company research for a job, and
 // caches them on the application row. Deploy: `supabase functions deploy interview-prep`
 import { corsHeaders } from "../_shared/cors.ts";
-import { callGemini, extractJson, geminiKey, userClient } from "../_shared/gemini.ts";
+import { callGemini, extractJson, geminiKey, userClient, withinAiQuota } from "../_shared/gemini.ts";
 
 function sampleQuestions(jobTitle: string, companyName: string) {
   return [
@@ -46,7 +46,7 @@ Deno.serve(async (req) => {
     let companyResearch: unknown = {};
     let fallback = false;
 
-    if (geminiKey()) {
+    if (geminiKey() && (await withinAiQuota(req))) {
       try {
         const qPrompt = `You are an expert interview coach. Generate 8 interview questions with model answers for this role.
 

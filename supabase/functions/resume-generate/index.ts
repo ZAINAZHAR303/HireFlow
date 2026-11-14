@@ -2,7 +2,7 @@
 // Tailors the user's latest resume to a job description via Gemini.
 // Deploy: `supabase functions deploy resume-generate`
 import { corsHeaders } from "../_shared/cors.ts";
-import { callGemini, geminiKey, userClient } from "../_shared/gemini.ts";
+import { callGemini, geminiKey, userClient, withinAiQuota } from "../_shared/gemini.ts";
 
 const SKILL_KEYWORDS = [
   "javascript", "typescript", "python", "java", "react", "angular", "vue", "node",
@@ -32,6 +32,7 @@ Deno.serve(async (req) => {
     const { jobTitle, jobCompany, jobDescription, tone = "professional" } = await req.json();
     if (!jobDescription) return json({ error: "Job description is required" }, 400);
     if (!geminiKey()) return json({ error: "AI is not configured (GEMINI_API_KEY missing)" }, 400);
+    if (!(await withinAiQuota(req))) return json({ error: "Daily AI limit reached. Please try again tomorrow." }, 429);
 
     const { data: resume } = await userClient(req)
       .from("resumes")

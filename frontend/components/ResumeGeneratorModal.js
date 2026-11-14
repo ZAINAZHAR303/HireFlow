@@ -169,7 +169,9 @@ export default function ResumeGeneratorModal({ job, onClose }) {
       console.error('Resume generation error:', err);
       const errorMessage = err.response?.data?.message || err.message;
       
-      if (errorMessage.includes('overloaded') || errorMessage.includes('503')) {
+      if (/429|quota|rate limit|limit reached/i.test(errorMessage)) {
+        toast('⚠️ AI is rate-limited right now (Gemini free-tier quota). Please wait a minute and try again.');
+      } else if (errorMessage.includes('overloaded') || errorMessage.includes('503')) {
         toast('⚠️ AI service is temporarily busy. Please try again in a few seconds.');
       } else if (errorMessage.includes('token limit')) {
         toast('⚠️ Job description or resume is too long. Please try with a shorter version.');

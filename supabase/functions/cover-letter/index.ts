@@ -2,7 +2,7 @@
 // Generates a tailored cover letter and caches it on the application row.
 // Deploy: `supabase functions deploy cover-letter`
 import { corsHeaders } from "../_shared/cors.ts";
-import { callGemini, geminiKey, userClient } from "../_shared/gemini.ts";
+import { callGemini, geminiKey, userClient, withinAiQuota } from "../_shared/gemini.ts";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
@@ -21,6 +21,7 @@ Deno.serve(async (req) => {
     }
 
     if (!geminiKey()) return json({ error: "AI is not configured (GEMINI_API_KEY missing)" }, 400);
+    if (!(await withinAiQuota(req))) return json({ error: "Daily AI limit reached. Please try again tomorrow." }, 429);
 
     const prompt = `You are a professional career coach. Write a compelling, personalized cover letter.
 

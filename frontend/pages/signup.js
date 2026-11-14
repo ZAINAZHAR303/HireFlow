@@ -9,6 +9,7 @@ export default function SignupPage(){
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [checkEmail, setCheckEmail] = useState(false);
   const router = useRouter();
 
   async function onSubmit(e){
@@ -20,12 +21,31 @@ export default function SignupPage(){
       setError(res.error || 'Signup failed');
     } else if (res.needsConfirmation) {
       setError('');
-      toast('Check your email to confirm your account, then sign in.');
-      router.push('/login');
+      setCheckEmail(true);
     } else {
       router.push('/dashboard');
     }
     setLoading(false);
+  }
+
+  if (checkEmail) {
+    return (
+      <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+        <div style={{ width: '100%', maxWidth: 460, background: 'white', borderRadius: 16, padding: 36, textAlign: 'center', boxShadow: '0 20px 60px rgba(0,0,0,0.25)' }}>
+          <div style={{ fontSize: 48, marginBottom: 12 }}>📬</div>
+          <h1 style={{ margin: 0, fontSize: 24, color: '#1e293b' }}>Check your inbox</h1>
+          <p style={{ color: '#475569', fontSize: 15, marginTop: 12, lineHeight: 1.6 }}>
+            We sent a confirmation link to <strong>{email}</strong>. Click it to activate your account, then sign in.
+          </p>
+          <p style={{ color: '#94a3b8', fontSize: 13, marginTop: 8 }}>
+            Don't see it? Check spam, or try signing in — you can resend the link from the login page.
+          </p>
+          <button onClick={() => router.push('/login')} style={{ marginTop: 20, width: '100%', padding: 14, border: 'none', borderRadius: 12, color: 'white', fontWeight: 700, fontSize: 15, cursor: 'pointer', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
+            Go to sign in
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (

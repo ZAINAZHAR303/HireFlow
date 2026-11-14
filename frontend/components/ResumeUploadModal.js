@@ -70,6 +70,8 @@ export default function ResumeUploadModal({ onClose, onUploaded }) {
           // Merge résumé skills with whatever the user typed (de-duped).
           skillsArray = Array.from(new Set([...skillsArray, ...parsed.skills]));
           setSkills(skillsArray.join(', '));
+        } else if (!result.textLength) {
+          toast('⚠️ Couldn\'t read this PDF (it may be scanned/image-based). Enter your skills manually.');
         }
         if (!resumePhone && parsed.phone) resumePhone = parsed.phone;
       }

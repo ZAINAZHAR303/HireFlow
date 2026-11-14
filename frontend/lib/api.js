@@ -258,7 +258,9 @@ export async function fetchJobs() {
   const res = await invoke('jobs');
   if (res.error) return res;
   let jobs = res.jobs || [];
-  const profile = getUser() || {};
+  // Read the live profile (not the stale localStorage cache) so a skills change
+  // takes effect immediately.
+  const profile = (await getProfile()) || getUser() || {};
   const coreSkills = profile.skills || [];
   if (coreSkills.length === 0) {
     return { count: jobs.length, jobs: jobs.slice(0, 100), message: 'Add skills or a resume to get personalized match scores.' };

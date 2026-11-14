@@ -43,7 +43,7 @@ export default function JobPreferencesModal({ onClose, onSave }) {
           ? `✅ Found ${parsed.skills.length} skills in your resume — review and edit below.`
           : 'Resume read, but no known skills detected — add them below.');
       } else {
-        toast('Resume uploaded. We could not read its text — enter your skills below.');
+        toast('⚠️ Couldn\'t read this PDF (it may be scanned or image-based). Please enter your skills manually below.');
       }
     } catch (err) {
       console.error('Failed to upload resume:', err);

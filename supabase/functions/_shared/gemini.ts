@@ -2,8 +2,11 @@
 // Reads GEMINI_API_KEY (or GEMINI_INTERVIEW_API_KEY) from function secrets.
 import { createClient, type SupabaseClient } from "jsr:@supabase/supabase-js@2";
 
+// Use Google's "-latest" alias so the model id doesn't rot as free-tier models
+// move forward; override with the GEMINI_MODEL secret if needed.
+const GEMINI_MODEL = Deno.env.get("GEMINI_MODEL") ?? "gemini-flash-lite-latest";
 const GEMINI_URL =
-  "https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent";
+  `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 
 export function geminiKey(): string | null {
   return Deno.env.get("GEMINI_API_KEY") ?? Deno.env.get("GEMINI_INTERVIEW_API_KEY") ?? null;
@@ -40,8 +43,11 @@ export async function callGemini(
         body: JSON.stringify(body),
         signal: controller.signal,
       });
-      if (resp.status === 503) {
-        lastErr = new Error("Gemini model temporarily overloaded");
+      if (resp.status === 503 || resp.status === 429) {
+        // Overloaded (503) or rate-limited (429) — back off and retry.
+        const body = await resp.text().catch(() => "");
+        lastErr = new Error(`Gemini ${resp.status}: ${body.slice(0, 300)}`);
+        await new Promise((r) => setTimeout(r, attempt * 2000));
         continue;
       }
       if (!resp.ok) {
@@ -87,4 +93,20 @@ export function userClient(req: Request): SupabaseClient {
     Deno.env.get("SUPABASE_ANON_KEY")!,
     { global: { headers: { Authorization: authHeader } } },
   );
+}
+
+/**
+ * Per-user daily AI rate limit. Atomically increments the caller's counter and
+ * returns true if they're still within the limit. Fails open on infra errors so
+ * a transient DB hiccup never blocks a legitimate user.
+ */
+export async function withinAiQuota(req: Request): Promise<boolean> {
+  const limit = Number(Deno.env.get("AI_DAILY_LIMIT") ?? "25");
+  try {
+    const { data, error } = await userClient(req).rpc("consume_ai_quota", { p_limit: limit });
+    if (error) return true;
+    return data === true;
+  } catch {
+    return true;
+  }
 }

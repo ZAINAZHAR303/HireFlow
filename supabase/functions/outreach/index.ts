@@ -3,7 +3,7 @@
 // profile. Uses Gemini when GEMINI_API_KEY is set; falls back to a template.
 // Deploy: `supabase functions deploy outreach`
 import { corsHeaders } from "../_shared/cors.ts";
-import { callGemini, extractJson, geminiKey, userClient } from "../_shared/gemini.ts";
+import { callGemini, extractJson, geminiKey, userClient, withinAiQuota } from "../_shared/gemini.ts";
 
 const TONES = ["professional", "warm", "confident", "concise"];
 
@@ -87,7 +87,8 @@ Deno.serve(async (req) => {
 
     const job = { jobTitle, companyName, jobDescription };
 
-    if (!geminiKey()) {
+    // No key, or over the daily AI limit → still return a usable template draft.
+    if (!geminiKey() || !(await withinAiQuota(req))) {
       return json({ ...fallbackOutreach(profile, job, tone), usedAI: false });
     }
     try {

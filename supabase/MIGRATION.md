@@ -62,6 +62,11 @@ supabase functions deploy cover-letter
 ```
 Notes:
 - `jobs` needs no key. (Optional) restrict sources via a `JOB_SOURCES` secret.
+- **AI model/limits (optional secrets):** `GEMINI_MODEL` (default `gemini-flash-lite-latest`
+  — the most generous free-tier model) and `AI_DAILY_LIMIT` (per-user AI calls/day,
+  default 25). If AI calls return **429 "Quota exceeded"**, that's your Google
+  project's per-minute limit — use an AI Studio free-tier key, enable billing, or
+  switch models via `GEMINI_MODEL`.
 - Without `GEMINI_API_KEY`, outreach still returns template drafts; resume /
   interview prep / cover letter return a clear "AI not configured" error
   (interview prep falls back to sample questions).
