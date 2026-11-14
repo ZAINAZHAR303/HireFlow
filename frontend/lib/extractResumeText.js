@@ -6,6 +6,26 @@
  * user actually uploads a résumé.
  */
 
+// OCR a scanned/image PDF by rendering its pages to canvas and running
+// tesseract.js (all in the browser, no API). Capped to a few pages for speed.
+async function ocrPdf(doc) {
+  const Tesseract = (await import('tesseract.js')).default;
+  const maxPages = Math.min(doc.numPages, 3);
+  let text = '';
+  for (let i = 1; i <= maxPages; i++) {
+    const page = await doc.getPage(i);
+    const viewport = page.getViewport({ scale: 2 });
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.ceil(viewport.width);
+    canvas.height = Math.ceil(viewport.height);
+    const ctx = canvas.getContext('2d');
+    await page.render({ canvasContext: ctx, viewport }).promise;
+    const { data } = await Tesseract.recognize(canvas, 'eng');
+    text += (data.text || '') + '\n';
+  }
+  return text.trim();
+}
+
 async function extractPdf(file) {
   const pdfjs = await import('pdfjs-dist');
   // Load the worker from a CDN matching the installed version (runs in the
@@ -19,7 +39,18 @@ async function extractPdf(file) {
     const content = await page.getTextContent();
     text += content.items.map((it) => it.str).join(' ') + '\n';
   }
-  return text.trim();
+  text = text.trim();
+
+  // No text layer (scanned/image PDF) → fall back to OCR.
+  if (text.length < 40) {
+    try {
+      const ocr = await ocrPdf(doc);
+      if (ocr.length > text.length) text = ocr;
+    } catch (err) {
+      console.error('OCR fallback failed:', err);
+    }
+  }
+  return text;
 }
 
 async function extractDocx(file) {

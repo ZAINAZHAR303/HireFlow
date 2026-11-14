@@ -341,6 +341,17 @@ export async function generateResume(_token, payload) {
   return invoke('resume-generate', payload);
 }
 
+// Best-effort AI résumé field extraction (merges with the client dictionary
+// parser). Returns { skills: [] } when AI is unavailable, so callers fall back.
+export async function extractResumeFields(text) {
+  try {
+    const res = await invoke('extract-resume', { text });
+    return res && !res.error ? res : { skills: [] };
+  } catch (_) {
+    return { skills: [] };
+  }
+}
+
 // Interview prep / cover letter still require a server-side AI call; these
 // Edge Functions are a documented next step. The invokers are kept so the UI
 // compiles and shows a clear error until the functions are deployed.

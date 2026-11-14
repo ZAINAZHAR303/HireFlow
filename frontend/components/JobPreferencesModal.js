@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { toast } from "../lib/toast";
-import { uploadResume } from '../lib/api';
+import { uploadResume, extractResumeFields } from '../lib/api';
 import { extractResumeText } from '../lib/extractResumeText';
 import { parseResumeProfile } from '../lib/resumeParse';
 
@@ -30,17 +30,24 @@ export default function JobPreferencesModal({ onClose, onSave }) {
       if (res.error) {
         toast(res.error);
       } else if (res.textLength > 0) {
-        // Auto-extract skills + contact links from the résumé text.
+        // Auto-extract skills + contact links from the résumé text: fast
+        // dictionary parse first, then an AI pass (best-effort) for anything it
+        // missed; merge the two.
         const parsed = parseResumeProfile(text);
-        if (parsed.skills.length) {
-          setSkills(parsed.skills.join(', '));
-          setExtractedSkills(parsed.skills);
+        let skills = parsed.skills;
+        const ai = await extractResumeFields(text);
+        if (Array.isArray(ai.skills) && ai.skills.length) {
+          skills = Array.from(new Set([...skills, ...ai.skills]));
         }
-        if (parsed.github) setGithub((g) => g || parsed.github);
-        if (parsed.linkedin) setLinkedin((l) => l || parsed.linkedin);
+        if (skills.length) {
+          setSkills(skills.join(', '));
+          setExtractedSkills(skills);
+        }
+        if (parsed.github || ai.github) setGithub((g) => g || parsed.github || ai.github);
+        if (parsed.linkedin || ai.linkedin) setLinkedin((l) => l || parsed.linkedin || ai.linkedin);
         if (parsed.phone) setPhone((p) => p || parsed.phone);
-        toast(parsed.skills.length
-          ? `✅ Found ${parsed.skills.length} skills in your resume — review and edit below.`
+        toast(skills.length
+          ? `✅ Found ${skills.length} skills in your resume — review and edit below.`
           : 'Resume read, but no known skills detected — add them below.');
       } else {
         toast('⚠️ Couldn\'t read this PDF (it may be scanned or image-based). Please enter your skills manually below.');
