@@ -522,6 +522,36 @@ export default function Dashboard(){
                   {noJobsMessage}
                 </p>
               </>
+            ) : (!user?.skills || user.skills.length === 0) ? (
+              <>
+                <div style={{ fontSize: '56px', marginBottom: '8px' }}>👋</div>
+                <h3 style={{ fontSize: '26px', color: '#1e293b', marginBottom: '8px' }}>Welcome to HireFlow — let's set you up</h3>
+                <p style={{ color: '#64748b', fontSize: '16px', marginBottom: '28px' }}>Three quick steps to your first personalized matches.</p>
+                <div style={{ display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 28 }}>
+                  {[
+                    { n: 1, icon: '📄', t: 'Upload your résumé', d: 'We read it in your browser — your file stays private.' },
+                    { n: 2, icon: '✨', t: 'We auto-fill your skills', d: 'Skills, GitHub & LinkedIn pulled automatically.' },
+                    { n: 3, icon: '🎯', t: 'See matched jobs', d: 'Ranked by how well they fit you.' },
+                  ].map((s) => (
+                    <div key={s.n} style={{ flex: '1 1 200px', maxWidth: 240, background: '#f8fafc', borderRadius: 14, padding: 20, textAlign: 'left', border: '1px solid #e2e8f0' }}>
+                      <div style={{ fontSize: 28 }}>{s.icon}</div>
+                      <div style={{ fontWeight: 700, color: '#1e293b', marginTop: 8 }}>{s.n}. {s.t}</div>
+                      <div style={{ color: '#64748b', fontSize: 13, marginTop: 4, lineHeight: 1.5 }}>{s.d}</div>
+                    </div>
+                  ))}
+                </div>
+                <button
+                  onClick={() => setShowUploadModal(true)}
+                  style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white', border: 'none', padding: '14px 32px', borderRadius: 12, cursor: 'pointer', fontSize: 16, fontWeight: 700, boxShadow: '0 4px 15px rgba(102,126,234,0.4)' }}
+                >
+                  📄 Upload résumé & get started
+                </button>
+                <div style={{ marginTop: 14 }}>
+                  <button onClick={() => setShowUploadModal(true)} style={{ background: 'none', border: 'none', color: '#667eea', cursor: 'pointer', fontSize: 14, fontWeight: 600 }}>
+                    or enter your skills manually →
+                  </button>
+                </div>
+              </>
             ) : (
               <>
                 <div style={{ fontSize: '64px', marginBottom: '20px' }}>🚀</div>
