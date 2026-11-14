@@ -289,6 +289,31 @@ export async function fetchJobs() {
     });
   }
   filtered.sort((a, b) => b.matchScore - a.matchScore);
+
+  // Semantic re-rank of the top candidates against the résumé embedding
+  // (best-effort: needs a résumé uploaded; silently skips otherwise).
+  try {
+    const top = filtered.slice(0, 30);
+    if (top.length) {
+      const rr = await invoke('semantic-rerank', {
+        jobs: top.map((j) => ({
+          id: j.id,
+          text: `${j.title} ${j.company_name} ${String(j.description || '').replace(/<[^>]+>/g, ' ')}`.slice(0, 2000),
+        })),
+      });
+      if (rr && rr.enabled && rr.scores) {
+        filtered = filtered
+          .map((j) => {
+            const sim = rr.scores[j.id];
+            if (sim == null) return j;
+            const s = Math.max(0, Math.min(1, sim));
+            return { ...j, matchScore: Math.round(0.55 * j.matchScore + 0.45 * s * 100), semantic: true };
+          })
+          .sort((a, b) => b.matchScore - a.matchScore);
+      }
+    }
+  } catch (_) { /* keyword order stands */ }
+
   return {
     count: filtered.length,
     jobs: filtered,

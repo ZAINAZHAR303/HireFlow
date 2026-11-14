@@ -1,32 +1,9 @@
-// HireFlow — embed Edge Function (text → embedding vector via Gemini).
-// Used by semantic matching. Returns { dims, vector } or an error.
+// HireFlow — embed Edge Function (text → embedding vector). Thin wrapper over
+// the shared embedText for diagnostics/standalone use.
 // Deploy: `supabase functions deploy embed`
 import { corsHeaders } from "../_shared/cors.ts";
-import { geminiKey, withinAiQuota } from "../_shared/gemini.ts";
-
-const EMBED_MODEL = Deno.env.get("GEMINI_EMBED_MODEL") ?? "gemini-embedding-001";
-export const EMBED_DIMS = Number(Deno.env.get("GEMINI_EMBED_DIMS") ?? "768");
-
-export async function embedText(text: string): Promise<number[]> {
-  const key = geminiKey();
-  if (!key) throw new Error("GEMINI_API_KEY not configured");
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${EMBED_MODEL}:embedContent?key=${key}`;
-  const resp = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      model: `models/${EMBED_MODEL}`,
-      content: { parts: [{ text: String(text).slice(0, 8000) }] },
-      outputDimensionality: EMBED_DIMS,
-    }),
-  });
-  if (!resp.ok) {
-    const body = await resp.text().catch(() => "");
-    throw new Error(`Embed ${resp.status}: ${body.slice(0, 300)}`);
-  }
-  const data = await resp.json();
-  return data?.embedding?.values ?? [];
-}
+import { withinAiQuota } from "../_shared/gemini.ts";
+import { embedText } from "../_shared/embed.ts";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
