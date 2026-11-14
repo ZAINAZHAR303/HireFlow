@@ -27,6 +27,14 @@ test('title matches beat description-only matches', () => {
   assert.ok(a.matchScore > b.matchScore);
 });
 
+test('synonyms match (k8s ≈ kubernetes, JS ≈ javascript)', () => {
+  const job = { title: 'Platform Engineer', category: 'DevOps', tags: ['kubernetes'], description: 'JavaScript tooling. JavaScript everywhere.' };
+  const r = scoreJob(job, { coreSkills: ['k8s', 'JS'], expansionTerms: [] });
+  assert.ok(r.matchedSkills.includes('k8s'));
+  assert.ok(r.matchedSkills.includes('js'));
+  assert.ok(r.matchScore >= 50);
+});
+
 test('score never exceeds 100', () => {
   const job = { title: 'React TypeScript Node.js AWS', category: 'Software Development', tags: ['react', 'typescript', 'node.js', 'aws'], description: 'react typescript node.js aws react typescript node.js aws' };
   assert.ok(scoreJob(job, profile).matchScore <= 100);

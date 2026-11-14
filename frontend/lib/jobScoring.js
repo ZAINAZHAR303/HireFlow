@@ -32,20 +32,47 @@ function tokenize(skill) {
   return parts.filter((p) => p.length >= 2);
 }
 
+// Synonyms / abbreviations so a résumé skill matches the way a JD phrases it
+// (e.g. "k8s" in a résumé matches "Kubernetes" in a posting). Bidirectional.
+const SYNONYMS = {
+  js: ['javascript'], javascript: ['js'],
+  ts: ['typescript'], typescript: ['ts'],
+  node: ['node.js', 'nodejs'], 'node.js': ['node', 'nodejs'], nodejs: ['node', 'node.js'],
+  react: ['reactjs', 'react.js'], reactjs: ['react'], 'react.js': ['react'],
+  next: ['next.js', 'nextjs'], 'next.js': ['next', 'nextjs'], nextjs: ['next.js'],
+  vue: ['vuejs', 'vue.js'], angular: ['angularjs'],
+  k8s: ['kubernetes'], kubernetes: ['k8s'],
+  ml: ['machine learning'], 'machine learning': ['ml'],
+  ai: ['artificial intelligence'], nlp: ['natural language processing'],
+  cv: ['computer vision'], dl: ['deep learning'],
+  postgres: ['postgresql'], postgresql: ['postgres'],
+  mongo: ['mongodb'], mongodb: ['mongo'],
+  py: ['python'], golang: ['go'], go: ['golang'],
+  gcp: ['google cloud'], aws: ['amazon web services'], azure: ['microsoft azure'],
+  tf: ['tensorflow'], 'ci/cd': ['cicd', 'continuous integration'],
+  rest: ['restful', 'rest api'], gql: ['graphql'],
+  tailwind: ['tailwindcss'], 'tailwind css': ['tailwind'],
+  'c#': ['csharp'], 'c++': ['cpp'], '.net': ['dotnet'],
+};
+
+function variantsOf(skill) {
+  const s = String(skill).toLowerCase().trim();
+  const set = new Set([s]);
+  (SYNONYMS[s] || []).forEach((v) => set.add(v));
+  return [...set];
+}
+
 function bestSignalForSkill(skill, fields) {
   const { title, category, tags, description } = fields;
   let best = 0;
-  for (const part of tokenize(skill)) {
-    if (title.includes(part)) {
-      best = Math.max(best, 1.0);
+  // Consider the skill plus its synonyms, so "k8s" ≈ "kubernetes" etc.
+  for (const variant of variantsOf(skill)) {
+    for (const part of tokenize(variant)) {
+      if (title.includes(part)) best = Math.max(best, 1.0);
+      if (category.includes(part) || tags.some((t) => t.includes(part))) best = Math.max(best, 0.6);
+      if (countOccurrences(description, part) >= 2) best = Math.max(best, 0.3);
+      if (best === 1.0) return best; // can't do better
     }
-    if (category.includes(part) || tags.some((t) => t.includes(part))) {
-      best = Math.max(best, 0.6);
-    }
-    if (countOccurrences(description, part) >= 2) {
-      best = Math.max(best, 0.3);
-    }
-    if (best === 1.0) break; // can't do better
   }
   return best;
 }

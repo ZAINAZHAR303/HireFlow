@@ -14,13 +14,35 @@ function tokenize(skill: string): string[] {
   return parts.filter((p) => p.length >= 2);
 }
 
+const SYNONYMS: Record<string, string[]> = {
+  js: ["javascript"], javascript: ["js"], ts: ["typescript"], typescript: ["ts"],
+  node: ["node.js", "nodejs"], "node.js": ["node", "nodejs"], nodejs: ["node", "node.js"],
+  react: ["reactjs", "react.js"], reactjs: ["react"], "react.js": ["react"],
+  next: ["next.js", "nextjs"], "next.js": ["next", "nextjs"], nextjs: ["next.js"],
+  k8s: ["kubernetes"], kubernetes: ["k8s"], ml: ["machine learning"], "machine learning": ["ml"],
+  ai: ["artificial intelligence"], nlp: ["natural language processing"], cv: ["computer vision"], dl: ["deep learning"],
+  postgres: ["postgresql"], postgresql: ["postgres"], mongo: ["mongodb"], mongodb: ["mongo"],
+  py: ["python"], golang: ["go"], go: ["golang"], gcp: ["google cloud"], aws: ["amazon web services"],
+  tf: ["tensorflow"], rest: ["restful", "rest api"], gql: ["graphql"], tailwind: ["tailwindcss"],
+  "c#": ["csharp"], "c++": ["cpp"], ".net": ["dotnet"],
+};
+
+function variantsOf(skill: string): string[] {
+  const s = skill.toLowerCase().trim();
+  const set = new Set<string>([s]);
+  (SYNONYMS[s] || []).forEach((v) => set.add(v));
+  return [...set];
+}
+
 function bestSignalForSkill(skill: string, fields: { title: string; category: string; tags: string[]; description: string }): number {
   let best = 0;
-  for (const part of tokenize(skill)) {
-    if (fields.title.includes(part)) best = Math.max(best, 1.0);
-    if (fields.category.includes(part) || fields.tags.some((t) => t.includes(part))) best = Math.max(best, 0.6);
-    if (countOccurrences(fields.description, part) >= 2) best = Math.max(best, 0.3);
-    if (best === 1.0) break;
+  for (const variant of variantsOf(skill)) {
+    for (const part of tokenize(variant)) {
+      if (fields.title.includes(part)) best = Math.max(best, 1.0);
+      if (fields.category.includes(part) || fields.tags.some((t) => t.includes(part))) best = Math.max(best, 0.6);
+      if (countOccurrences(fields.description, part) >= 2) best = Math.max(best, 0.3);
+      if (best === 1.0) return best;
+    }
   }
   return best;
 }
