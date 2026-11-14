@@ -46,6 +46,11 @@ export default function Tracker() {
     }
   }
 
+  async function saveNotes(app, notes) {
+    setApps((prev) => prev.map((a) => (a._id === app._id ? { ...a, notes } : a)));
+    await updateApplication(null, app._id, { notes });
+  }
+
   async function remove(app) {
     if (!confirm(`Remove "${app.jobTitle}" from your tracker?`)) return;
     setApps((prev) => prev.filter((a) => a._id !== app._id));
@@ -110,7 +115,7 @@ export default function Tracker() {
                   </div>
 
                   {items.map((app) => (
-                    <ApplicationCard key={app._id} app={app} stage={stage} onMove={moveTo} onRemove={remove} />
+                    <ApplicationCard key={app._id} app={app} stage={stage} onMove={moveTo} onRemove={remove} onSaveNotes={saveNotes} />
                   ))}
                 </div>
               );
@@ -122,8 +127,18 @@ export default function Tracker() {
   );
 }
 
-function ApplicationCard({ app, stage, onMove, onRemove }) {
+function ApplicationCard({ app, stage, onMove, onRemove, onSaveNotes }) {
   const stageIndex = STAGES.findIndex((s) => s.key === stage.key);
+  const [showNotes, setShowNotes] = useState(!!app.notes);
+  const [notes, setNotes] = useState(app.notes || '');
+  const [savingNotes, setSavingNotes] = useState(false);
+  const dirty = notes !== (app.notes || '');
+
+  async function handleSaveNotes() {
+    setSavingNotes(true);
+    await onSaveNotes(app, notes);
+    setSavingNotes(false);
+  }
   return (
     <div
       style={{
@@ -186,11 +201,35 @@ function ApplicationCard({ app, stage, onMove, onRemove }) {
         </button>
       </div>
 
-      {app.appliedAt && stageIndex > 0 && (
-        <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 8 }}>
-          Applied {new Date(app.appliedAt).toLocaleDateString()}
-        </div>
-      )}
+      {/* Notes */}
+      <div style={{ marginTop: 10 }}>
+        {!showNotes ? (
+          <button onClick={() => setShowNotes(true)} style={{ background: 'none', border: 'none', color: '#667eea', cursor: 'pointer', fontSize: 12, fontWeight: 600, padding: 0 }}>
+            📝 Add notes
+          </button>
+        ) : (
+          <div>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Notes (contacts, interview dates, follow-ups…)"
+              rows={3}
+              style={{ width: '100%', boxSizing: 'border-box', padding: '8px 10px', border: '1px solid #e2e8f0', borderRadius: 8, fontSize: 13, fontFamily: 'inherit', resize: 'vertical', color: '#334155' }}
+            />
+            {dirty && (
+              <button onClick={handleSaveNotes} disabled={savingNotes} style={{ marginTop: 6, background: '#667eea', color: 'white', border: 'none', borderRadius: 8, padding: '5px 12px', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+                {savingNotes ? 'Saving…' : 'Save notes'}
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Timestamps */}
+      <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 8, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+        {app.createdAt && <span>Added {new Date(app.createdAt).toLocaleDateString()}</span>}
+        {app.appliedAt && stageIndex > 0 && <span>· Applied {new Date(app.appliedAt).toLocaleDateString()}</span>}
+      </div>
     </div>
   );
 }

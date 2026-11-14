@@ -1,11 +1,24 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { toast } from "../lib/toast";
 import ResumeGeneratorModal from './ResumeGeneratorModal';
 import AtsScoreModal from './AtsScoreModal';
 import OutreachModal from './OutreachModal';
-import { trackApplication, getToken } from '../lib/api';
+import { trackApplication, getToken, getUser } from '../lib/api';
+import { extractJdKeywords } from '../lib/atsScore';
 
 export default function JobCard({ job }){
+  // "Improve your match": in-demand keywords this job wants that aren't on the
+  // user's profile yet.
+  const missingSkills = useMemo(() => {
+    if (job.matchScore === undefined || job.matchScore === null) return [];
+    const userSkills = ((getUser() || {}).skills || []).map((s) => String(s).toLowerCase());
+    const jd = String(job.description || '').replace(/<[^>]+>/g, ' ');
+    const jdKeywords = extractJdKeywords(jd).map((k) => k.keyword);
+    return jdKeywords
+      .filter((k) => !userSkills.some((s) => s.includes(k) || k.includes(s)))
+      .slice(0, 6);
+  }, [job]);
+
   const [showResumeGenerator, setShowResumeGenerator] = useState(false);
   const [showAtsScore, setShowAtsScore] = useState(false);
   const [showOutreach, setShowOutreach] = useState(false);
@@ -144,6 +157,27 @@ export default function JobCard({ job }){
                     </li>
                   ))}
                 </ul>
+              </div>
+            )}
+
+            {missingSkills.length > 0 && (
+              <div style={{
+                marginTop: 10,
+                padding: '12px 14px',
+                background: '#fffbeb',
+                borderRadius: 12,
+                fontSize: 13,
+                border: '1px solid #fde68a',
+              }}>
+                <strong style={{ color: '#b45309', fontSize: 14 }}>💡 Improve your match</strong>
+                <div style={{ color: '#92400e', marginTop: 6 }}>
+                  This role mentions skills not on your profile. If you have them, add them to rank higher:
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
+                  {missingSkills.map((k) => (
+                    <span key={k} style={{ padding: '3px 10px', borderRadius: 14, background: 'white', color: '#b45309', border: '1px solid #fcd34d', fontWeight: 600 }}>{k}</span>
+                  ))}
+                </div>
               </div>
             )}
 
