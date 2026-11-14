@@ -81,6 +81,10 @@ ATS rules: use exact keywords from the JD, include acronyms and full terms, quan
       },
     });
   } catch (e) {
-    return json({ error: "Failed to generate resume", message: String((e as Error).message) }, 500);
+    const msg = String((e as Error).message);
+    if (/429|quota|rate limit/i.test(msg)) {
+      return json({ error: "AI is rate-limited (Gemini free-tier quota). Wait a minute and try again, or switch AI provider.", message: msg }, 429);
+    }
+    return json({ error: "Failed to generate resume", message: msg }, 500);
   }
 });
